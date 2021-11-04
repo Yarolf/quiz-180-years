@@ -26,11 +26,25 @@ class Answer(BaseModel):
         db_table = 'user_answers'
 
 
+class PossibleAnswer(BaseModel):
+    text = TextField()
+
+    class Meta:
+        db_table = 'possible_answers'
+
+
 class QuestionBlock(BaseModel):
     file_path = TextField()
     text = TextField()
-    possible_answers = ArrayField(TextField, default=['ДА', 'НЕТ'])
+    right_answer = ForeignKeyField(PossibleAnswer)
 
     class Meta:
         db_table = 'question_blocks'
 
+
+class QuestionAnswer(BaseModel):
+    question = ForeignKeyField(QuestionBlock)
+    answer = ForeignKeyField(Answer)
+
+    class Meta:
+        db_table = 'questions_answers'

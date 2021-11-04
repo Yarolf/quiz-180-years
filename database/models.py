@@ -8,10 +8,10 @@ class BaseModel(Model):
 
 
 class User(BaseModel):
+    telegram_id = BigIntegerField(primary_key=True)
     first_name = TextField()
     second_name = TextField()
     nick_name = TextField()
-    telegram_id = BigIntegerField()
 
     class Meta:
         db_table = 'users'

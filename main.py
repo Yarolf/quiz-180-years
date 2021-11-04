@@ -1,11 +1,11 @@
 import logging
 import os
-from bot import bot, dispatcher as dp
+from telegram.bot import bot, dispatcher as dp
 import config
 from aiogram.utils.executor import start_webhook, start_polling
 
 # эти импорты необходимы для работы декораторов
-import user
+from telegram.handlers import user
 
 
 async def on_startup(dispatcher):

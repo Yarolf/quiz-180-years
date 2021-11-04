@@ -1,6 +1,6 @@
 from aiogram import types
 
-from bot import dispatcher as dp
+from telegram.bot import dispatcher as dp
 import logging
 
 

@@ -3,6 +3,8 @@ import os
 from telegram.bot import bot, dispatcher as dp
 import config
 from aiogram.utils.executor import start_webhook, start_polling
+from database.models import User
+from database.connection import database_connection as db
 
 # эти импорты необходимы для работы декораторов
 from telegram.handlers import user
@@ -16,8 +18,14 @@ async def on_shutdown(dispatcher):
     await bot.delete_webhook()
 
 
-if __name__ == '__main__':
+def prepare():
     logging.basicConfig(level=logging.INFO)
+    with db:
+        db.create_tables([User])
+
+
+if __name__ == '__main__':
+    prepare()
     if os.getenv('HEROKU'):
         print('!!! USING WEBHOOK NOW !!!!')
         start_webhook(

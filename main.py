@@ -3,7 +3,7 @@ import os
 from telegram.bot import bot, dispatcher as dp
 import config
 from aiogram.utils.executor import start_webhook, start_polling
-from database.models import User, Answer, QuestionBlock, QuestionAnswer, PossibleAnswer
+from database.models import User, Answer, QuestionBlock, PossibleAnswer
 from database.connection import database_connection as db
 
 # эти импорты необходимы для работы декораторов
@@ -21,7 +21,7 @@ async def on_shutdown(dispatcher):
 def prepare():
     logging.basicConfig(level=logging.INFO)
     with db:
-        db.create_tables([User, Answer, QuestionBlock, QuestionAnswer, PossibleAnswer])
+        db.create_tables([User, Answer, QuestionBlock, PossibleAnswer])
 
 
 if __name__ == '__main__':

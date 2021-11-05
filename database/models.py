@@ -1,6 +1,5 @@
 from peewee import Model, TextField, BigIntegerField, ForeignKeyField
 from database.connection import database_connection as db
-from playhouse.postgres_ext import ArrayField
 
 
 class BaseModel(Model):
@@ -34,17 +33,9 @@ class PossibleAnswer(BaseModel):
 
 
 class QuestionBlock(BaseModel):
-    file_path = TextField()
+    file_name = TextField()
     text = TextField()
     right_answer = ForeignKeyField(PossibleAnswer)
 
     class Meta:
         db_table = 'question_blocks'
-
-
-class QuestionAnswer(BaseModel):
-    question = ForeignKeyField(QuestionBlock)
-    answer = ForeignKeyField(Answer)
-
-    class Meta:
-        db_table = 'questions_answers'

@@ -1,5 +1,7 @@
 import os
 
+from enums.Prefix import CallbackDataPrefix, Prefix, SplitCharacter
+
 TOKEN = os.getenv('BOT_TOKEN')
 
 HEROKU_APP_NAME = os.getenv('HEROKU_APP_NAME')
@@ -15,3 +17,5 @@ WEBAPP_HOST = '0.0.0.0'
 WEBAPP_PORT = os.getenv('PORT', default=8000)
 
 DB_URL = os.getenv('DATABASE_URL')
+
+USER_ANSWER_PREFIX = CallbackDataPrefix(Prefix.USER_ANSWER.value, SplitCharacter.FORWARD_SLASH.value)

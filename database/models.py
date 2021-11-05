@@ -4,6 +4,7 @@ from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from peewee import Model, TextField, BigIntegerField, ForeignKeyField
 from database.connection import database_connection as db
 from attachments.file import Attachment, AttachmentNotSpecifiedError
+from enums.Prefix import Prefix, SplitCharacter, CallbackDataPrefix
 
 
 class BaseModel(Model):
@@ -37,19 +38,29 @@ class PossibleAnswer(BaseModel):
 
 
 class QuestionBlock(BaseModel):
+    tour_number = BigIntegerField(null=False, unique=True)
     file_name = TextField()
     text = TextField()
     right_answer = ForeignKeyField(PossibleAnswer)
 
-    async def send_to_user(self, message: Message, possible_answers: list[PossibleAnswer]):
+    async def send_to_user(self, message: Message,
+                           possible_answers: list[PossibleAnswer],
+                           prefix: CallbackDataPrefix):
+        keyboard = self.__get_keyboard(possible_answers, prefix)
         try:
-            keyboard = InlineKeyboardMarkup()
-            keyboard.add(*[InlineKeyboardButton(text=str(possible_answer.text), callback_data=possible_answer.id)
-                           for possible_answer in possible_answers])
             await self.__send_to_user(message, keyboard)
         except AttachmentNotSpecifiedError as e:
             logging.error(e)
             await message.answer('Что-то пошло не так!')
+
+    def __get_keyboard(self, possible_answers: list[PossibleAnswer], prefix: CallbackDataPrefix):
+        keyboard = InlineKeyboardMarkup()
+        prefix = prefix.get_full_prefix() + str(self.tour_number) + prefix.split_character
+        buttons = [InlineKeyboardButton(text=str(possible_answer.text),
+                                        callback_data=prefix + str(possible_answer.id))
+                   for possible_answer in possible_answers]
+        keyboard.add(*buttons)
+        return keyboard
 
     async def __send_to_user(self, message: Message, reply_markup):
         attachment = Attachment.get_attachment_by_file_name(self.file_name)

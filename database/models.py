@@ -65,8 +65,8 @@ class QuestionBlock(BaseModel):
 
 class Answer(BaseModel):
     user = ForeignKeyField(User)
-    answer = ForeignKeyField(PossibleAnswer)
     question = ForeignKeyField(QuestionBlock)
+    answer = ForeignKeyField(PossibleAnswer)
 
     class Meta:
         db_table = 'user_answers'

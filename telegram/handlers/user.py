@@ -10,7 +10,7 @@ from config import USER_ANSWER_PREFIX
 
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
-    logging.info(f'Пользователь {message.from_user.id} ввёл команду start')
+    logging.info(f'Пользователь {message.from_user.first_name} {message.from_user.last_name} ввёл команду start')
     User.get_or_create(telegram_id=message.from_user.id,
                        first_name=message.from_user.first_name,
                        second_name=message.from_user.last_name,
@@ -35,7 +35,6 @@ async def process_answer_call(call_back: CallbackQuery):
         await call_back.message.delete()
         call_back_data = call_back.data.lstrip(USER_ANSWER_PREFIX.get_full_prefix())
         tour_number = int(call_back_data.split(USER_ANSWER_PREFIX.split_character)[0]) + 1
-        print(tour_number)
         question: QuestionBlock = QuestionBlock.get(QuestionBlock.tour_number == tour_number)
         try:
             possible_answers = PossibleAnswer.select().execute()
@@ -45,4 +44,5 @@ async def process_answer_call(call_back: CallbackQuery):
             logging.info(f'Тип файла не поддерживается: {question.file_name}')
     except Exception:
         await call_back.message.answer('Спасибо за участие!')
+    await call_back.answer()
 

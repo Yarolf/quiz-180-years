@@ -2,7 +2,7 @@ from aiogram import types
 
 from telegram.bot import dispatcher as dp
 import logging
-from database.models import User, QuestionBlock
+from database.models import User, QuestionBlock, PossibleAnswer
 from attachments.file import AttachmentNotSpecifiedError
 
 
@@ -19,7 +19,8 @@ async def process_start_command(message: types.Message):
 async def process_test_command(message: types.Message):
     question: QuestionBlock = QuestionBlock.get(QuestionBlock.id == 1)
     try:
-        await question.send_to_user(message, ['да', "нет"])
+        possible_answers = PossibleAnswer.select().execute()
+        await question.send_to_user(message, possible_answers)
     except AttachmentNotSpecifiedError:
         await message.answer('Что-то пошло не так(')
         logging.info(f'Тип файла не поддерживается: {question.file_name}')

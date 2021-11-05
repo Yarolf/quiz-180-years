@@ -41,10 +41,10 @@ class QuestionBlock(BaseModel):
     text = TextField()
     right_answer = ForeignKeyField(PossibleAnswer)
 
-    async def send_to_user(self, message: Message, possible_answers: list[str]):
+    async def send_to_user(self, message: Message, possible_answers: list[PossibleAnswer]):
         try:
             keyboard = InlineKeyboardMarkup()
-            keyboard.add(*[InlineKeyboardButton(possible_answer, callback_data=possible_answer)
+            keyboard.add(*[InlineKeyboardButton(text=str(possible_answer.text), callback_data=possible_answer.id)
                            for possible_answer in possible_answers])
             await self.__send_to_user(message, keyboard)
         except AttachmentNotSpecifiedError as e:

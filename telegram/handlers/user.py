@@ -20,7 +20,7 @@ async def process_start_command(message: types.Message):
 
 @dp.message_handler(commands=['test'])
 async def process_test_command(message: types.Message):
-    question: QuestionBlock = QuestionBlock.get(QuestionBlock.id == 1)
+    question: QuestionBlock = QuestionBlock.get(QuestionBlock.tour_number == 1)
     try:
         possible_answers = PossibleAnswer.select().execute()
         await question.send_to_user(message, possible_answers, USER_ANSWER_PREFIX)

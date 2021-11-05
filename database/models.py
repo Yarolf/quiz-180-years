@@ -116,7 +116,7 @@ class Answer(BaseModel):
         return cls(user=user,
                    question=question_number,
                    answer=answer_id,
-                   date=datetime.now(timezone(timedelta(hours=8))))
+                   date=datetime.utcnow())
 
     class Meta:
         db_table = 'user_answers'

@@ -81,14 +81,7 @@ class QuestionBlock(BaseModel):
         await attachment.get_answer_method(message)(input_file, caption=self.text, reply_markup=reply_markup)
 
     @classmethod
-    def try_get_next_question(cls, question_number):
-        try:
-            return cls.__get_next_question(question_number)
-        except cls.OutOfQuestions:
-            return
-
-    @classmethod
-    def __get_next_question(cls, tour_number):
+    def get_next_question(cls, tour_number) -> 'QuestionBlock':
         next_tour_number = tour_number + 1
         try:
             return cls.get(next_tour_number)

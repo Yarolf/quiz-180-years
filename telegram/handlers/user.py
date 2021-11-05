@@ -25,17 +25,21 @@ async def process_test_command(message: types.Message):
 
 @dp.callback_query_handler(lambda call: call.data.startswith(USER_ANSWER_PREFIX.prefix))
 async def process_answer_call(callback: CallbackQuery):
+    try:
+        await __process_answer_call(callback)
+    except QuestionBlock.OutOfQuestions:
+        await callback.message.answer('Все ответы приняты, спасибо за участие!')
+        await callback.message.delete()
+    finally:
+        await callback.answer()
+
+
+async def __process_answer_call(callback: CallbackQuery):
     call_back_data = callback.data.lstrip(USER_ANSWER_PREFIX.get_full_prefix())
     answer = Answer.parse(callback.from_user.id, call_back_data)
     answer.save()
-
     question_block: QuestionBlock = QuestionBlock.try_get_next_question(answer.question.tour_number)
-    if question_block is not None:
-        await question_block.edit_sent(callback.message, USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
-    else:
-        await callback.message.answer('Спасибо за участие!')
-        await callback.message.delete()
-    await callback.answer()
+    await question_block.edit_sent(callback.message, USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
 
 
 

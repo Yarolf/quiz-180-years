@@ -4,7 +4,7 @@ from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from peewee import Model, TextField, BigIntegerField, ForeignKeyField
 from database.connection import database_connection as db
 from attachments.file import Attachment, AttachmentNotSpecifiedError
-from enums.Prefix import Prefix, SplitCharacter, CallbackDataPrefix
+from enums.Prefix import CallbackDataPrefix
 
 
 class BaseModel(Model):
@@ -22,14 +22,6 @@ class User(BaseModel):
         db_table = 'users'
 
 
-class Answer(BaseModel):
-    user = ForeignKeyField(User)
-    answer = TextField()
-
-    class Meta:
-        db_table = 'user_answers'
-
-
 class PossibleAnswer(BaseModel):
     text = TextField()
 
@@ -38,7 +30,7 @@ class PossibleAnswer(BaseModel):
 
 
 class QuestionBlock(BaseModel):
-    tour_number = BigIntegerField(null=False, unique=True)
+    tour_number = BigIntegerField(primary_key=True)
     file_name = TextField()
     text = TextField()
     right_answer = ForeignKeyField(PossibleAnswer)
@@ -69,3 +61,12 @@ class QuestionBlock(BaseModel):
 
     class Meta:
         db_table = 'question_blocks'
+
+
+class Answer(BaseModel):
+    user = ForeignKeyField(User)
+    question = ForeignKeyField(QuestionBlock)
+    answer = ForeignKeyField(PossibleAnswer)
+
+    class Meta:
+        db_table = 'user_answers'

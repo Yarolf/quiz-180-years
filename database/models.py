@@ -8,7 +8,7 @@ from config import USER_ANSWER_PREFIX
 from database.connection import database_connection as db
 from attachments.file import Attachment, AttachmentNotSupportedError
 from enums.Prefix import CallbackDataPrefix
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 
 
 class BaseModel(Model):

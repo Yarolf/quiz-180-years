@@ -28,8 +28,8 @@ async def process_answer_call(callback: CallbackQuery):
     try:
         await __process_answer_call(callback)
     except QuestionBlock.OutOfQuestions:
-        await callback.message.answer('Все ответы приняты, спасибо за участие!')
         await callback.message.delete()
+        await callback.message.answer('Все ответы приняты, спасибо за участие!')
     finally:
         await callback.answer()
 

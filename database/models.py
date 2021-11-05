@@ -8,7 +8,7 @@ from config import USER_ANSWER_PREFIX
 from database.connection import database_connection as db
 from attachments.file import Attachment, AttachmentNotSupportedError
 from enums.Prefix import CallbackDataPrefix
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 
 class BaseModel(Model):
@@ -116,7 +116,7 @@ class Answer(BaseModel):
         return cls(user=user,
                    question=question_number,
                    answer=answer_id,
-                   date=datetime.now())
+                   date=datetime.now(timezone(timedelta(hours=8))))
 
     class Meta:
         db_table = 'user_answers'

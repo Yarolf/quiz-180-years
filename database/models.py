@@ -102,7 +102,7 @@ class Answer(BaseModel):
     date = DateTimeField(null=False)
 
     @classmethod
-    def parse(cls, user, callback_data):
+    def parse(cls, user, callback_data) -> 'Answer':
         split_data = callback_data.split(USER_ANSWER_PREFIX.split_character)
         question_number = int(split_data[0])
         answer_id = split_data[1]

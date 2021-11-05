@@ -15,6 +15,7 @@ async def process_start_command(message: types.Message):
                        first_name=message.from_user.first_name,
                        second_name=message.from_user.last_name,
                        nick_name=message.from_user.username)
+    await process_test_command(message)
 
 
 @dp.message_handler(commands=['test'])

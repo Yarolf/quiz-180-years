@@ -35,7 +35,7 @@ class Attachment:
     @classmethod
     def get_attachment_by_file_name(cls, file_name):
         try:
-            cls.__get_attachment_by_file_name(file_name)
+            return cls.__get_attachment_by_file_name(file_name)
         except KeyError:
             raise AttachmentNotSpecifiedError('Такой тип файла не поддерживается!')
 

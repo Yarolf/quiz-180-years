@@ -33,7 +33,7 @@ class File:
 
     def get_media_file(self, caption):
         try:
-            self._get_media_file(caption)
+            return self._get_media_file(caption)
         except FileNotFoundError:
             raise FileNotFoundError(f'Файл {self.file_path} не найден!')
 

@@ -34,6 +34,7 @@ async def process_answer_call(callback: CallbackQuery):
         await question_block.edit_sent(callback.message, USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
     else:
         await callback.message.answer('Спасибо за участие!')
+        await callback.message.delete()
     await callback.answer()
 
 

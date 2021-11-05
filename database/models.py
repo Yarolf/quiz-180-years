@@ -2,12 +2,13 @@ import logging
 
 import peewee
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from peewee import Model, TextField, BigIntegerField, ForeignKeyField
+from peewee import Model, TextField, BigIntegerField, ForeignKeyField, DateTimeField
 
 from config import USER_ANSWER_PREFIX
 from database.connection import database_connection as db
-from attachments.file import Attachment, AttachmentNotSpecifiedError
+from attachments.file import Attachment, AttachmentNotSupportedError
 from enums.Prefix import CallbackDataPrefix
+from datetime import datetime
 
 
 class BaseModel(Model):
@@ -38,15 +39,32 @@ class QuestionBlock(BaseModel):
     text = TextField()
     right_answer = ForeignKeyField(PossibleAnswer)
 
+    async def edit_sent(self, message: Message,
+                        prefix: CallbackDataPrefix,
+                        possible_answers: list[PossibleAnswer]):
+        try:
+            await self.__edit_sent(message, prefix, possible_answers)
+        except (AttachmentNotSupportedError, FileNotFoundError) as e:
+            logging.error(e)
+            await message.answer('Что-то пошло не так, мы уже работаем над ошибкой ...')
+
+    async def __edit_sent(self, message: Message,
+                          prefix: CallbackDataPrefix,
+                          possible_answers: list[PossibleAnswer]):
+        attachment = Attachment.get_attachment_by_file_name(self.file_name)
+        input_media = attachment.get_media_file(str(self.text))
+        keyboard = self.__get_keyboard(possible_answers, prefix)
+        await message.edit_media(input_media, reply_markup=keyboard)
+
     async def send_to_user(self, message: Message,
                            prefix: CallbackDataPrefix,
                            possible_answers: list[PossibleAnswer]):
         keyboard = self.__get_keyboard(possible_answers, prefix)
         try:
             await self.__send_to_user(message, keyboard)
-        except AttachmentNotSpecifiedError as e:
+        except (AttachmentNotSupportedError, FileNotFoundError) as e:
             logging.error(e)
-            await message.answer('Что-то пошло не так!')
+            await message.answer('Что-то пошло не так, мы уже работаем над ошибкой ...')
 
     def __get_keyboard(self, possible_answers: list[PossibleAnswer], prefix: CallbackDataPrefix):
         keyboard = InlineKeyboardMarkup()
@@ -88,6 +106,7 @@ class Answer(BaseModel):
     user = ForeignKeyField(User)
     question = ForeignKeyField(QuestionBlock)
     answer = ForeignKeyField(PossibleAnswer)
+    date = DateTimeField(null=False)
 
     @classmethod
     def parse(cls, user, callback_data):
@@ -96,7 +115,8 @@ class Answer(BaseModel):
         answer_id = split_data[1]
         return cls(user=user,
                    question=question_number,
-                   answer=answer_id)
+                   answer=answer_id,
+                   date=datetime.now())
 
     class Meta:
         db_table = 'user_answers'

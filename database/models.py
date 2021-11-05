@@ -95,14 +95,14 @@ class QuestionBlock(BaseModel):
         db_table = 'question_blocks'
 
 
-class Answer(BaseModel):
-    user = ForeignKeyField(User)
-    question = ForeignKeyField(QuestionBlock)
-    answer = ForeignKeyField(PossibleAnswer)
-    date = DateTimeField(null=False)
+class UserAnswer(BaseModel):
+    user: User = ForeignKeyField(User)
+    question: QuestionBlock = ForeignKeyField(QuestionBlock)
+    answer: PossibleAnswer = ForeignKeyField(PossibleAnswer)
+    date: datetime = DateTimeField(null=False)
 
     @classmethod
-    def parse(cls, user, callback_data) -> 'Answer':
+    def parse(cls, user, callback_data) -> 'UserAnswer':
         split_data = callback_data.split(USER_ANSWER_PREFIX.split_character)
         question_number = int(split_data[0])
         answer_id = split_data[1]
@@ -110,6 +110,14 @@ class Answer(BaseModel):
                    question=question_number,
                    answer=answer_id,
                    date=datetime.utcnow())
+
+    @classmethod
+    def get_last_answered(cls, user_id):
+        query: list[cls] = cls.select(). \
+            where(cls.user == user_id). \
+            order_by(cls.question.desc()). \
+            limit(1)
+        return query[0]
 
     class Meta:
         db_table = 'user_answers'

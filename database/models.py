@@ -1,7 +1,10 @@
 import logging
 
+import peewee
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from peewee import Model, TextField, BigIntegerField, ForeignKeyField
+
+from config import USER_ANSWER_PREFIX
 from database.connection import database_connection as db
 from attachments.file import Attachment, AttachmentNotSpecifiedError
 from enums.Prefix import CallbackDataPrefix
@@ -36,8 +39,8 @@ class QuestionBlock(BaseModel):
     right_answer = ForeignKeyField(PossibleAnswer)
 
     async def send_to_user(self, message: Message,
-                           possible_answers: list[PossibleAnswer],
-                           prefix: CallbackDataPrefix):
+                           prefix: CallbackDataPrefix,
+                           possible_answers: list[PossibleAnswer]):
         keyboard = self.__get_keyboard(possible_answers, prefix)
         try:
             await self.__send_to_user(message, keyboard)
@@ -59,6 +62,24 @@ class QuestionBlock(BaseModel):
         input_file = attachment.get_input_file()
         await attachment.get_answer_method(message)(input_file, caption=self.text, reply_markup=reply_markup)
 
+    @classmethod
+    def try_get_next_question(cls, question_number):
+        try:
+            return cls.__get_next_question(question_number)
+        except cls.OutOfQuestions:
+            return
+
+    @classmethod
+    def __get_next_question(cls, tour_number):
+        next_tour_number = tour_number + 1
+        try:
+            return cls.get(next_tour_number)
+        except peewee.DoesNotExist:
+            raise cls.OutOfQuestions('Вопросов больше не осталось!')
+
+    class OutOfQuestions(Exception):
+        pass
+
     class Meta:
         db_table = 'question_blocks'
 
@@ -67,6 +88,15 @@ class Answer(BaseModel):
     user = ForeignKeyField(User)
     question = ForeignKeyField(QuestionBlock)
     answer = ForeignKeyField(PossibleAnswer)
+
+    @classmethod
+    def parse(cls, user, callback_data):
+        split_data = callback_data.split(USER_ANSWER_PREFIX.split_character)
+        question_number = int(split_data[0])
+        answer_id = split_data[1]
+        return cls(user=user,
+                   question=question_number,
+                   answer=answer_id)
 
     class Meta:
         db_table = 'user_answers'

@@ -3,10 +3,8 @@ from aiogram.types import CallbackQuery
 
 from telegram.bot import dispatcher as dp
 import logging
-from database.models import User, QuestionBlock, PossibleAnswer, Answer
-from attachments.file import AttachmentNotSpecifiedError
+from database.models import User, QuestionBlock, Answer, PossibleAnswer
 from config import USER_ANSWER_PREFIX
-import peewee
 
 
 @dp.message_handler(commands=['start'])
@@ -21,48 +19,23 @@ async def process_start_command(message: types.Message):
 
 @dp.message_handler(commands=['test'])
 async def process_test_command(message: types.Message):
-    question: QuestionBlock = QuestionBlock.get(1)
-    try:
-        possible_answers = PossibleAnswer.select().execute()
-        await question.send_to_user(message, possible_answers, USER_ANSWER_PREFIX)
-    except AttachmentNotSpecifiedError:
-        await message.answer('Что-то пошло не так(')
-        logging.info(f'Тип файла не поддерживается: {question.file_name}')
+    question_block: QuestionBlock = QuestionBlock.get(1)
+    await question_block.send_to_user(message, USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
 
 
 @dp.callback_query_handler(lambda call: call.data.startswith(USER_ANSWER_PREFIX.prefix))
 async def process_answer_call(call_back: CallbackQuery):
     await call_back.message.delete()
     call_back_data = call_back.data.lstrip(USER_ANSWER_PREFIX.get_full_prefix())
-    split_data = call_back_data.split(USER_ANSWER_PREFIX.split_character)
-    question_number = int(split_data[0])
-    answer_id = split_data[1]
-    Answer.insert(user=call_back.from_user.id, question=question_number, answer=answer_id).execute()
+    answer = Answer.parse(call_back.from_user.id, call_back_data)
+    answer.save()
 
-    try:
-        question = get_next_question(question_number)
-    except OutOfQuestions:
+    question_block: QuestionBlock = QuestionBlock.try_get_next_question(answer.question.tour_number)
+    if question_block is not None:
+        await question_block.send_to_user(call_back.message, USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
+    else:
         await call_back.message.answer('Спасибо за участие!')
-        await call_back.answer()
-        return
-
-    try:
-        possible_answers = PossibleAnswer.select().execute()
-        await question.send_to_user(call_back.message, possible_answers, USER_ANSWER_PREFIX)
-    except AttachmentNotSpecifiedError:
-        await call_back.message.answer('Что-то пошло не так(')
-        logging.info(f'Тип файла не поддерживается: {question.file_name}')
     await call_back.answer()
 
 
-def get_next_question(tour_number):
-    next_tour_number = tour_number + 1
-    try:
-        return QuestionBlock.get(next_tour_number)
-    except peewee.DoesNotExist:
-        raise OutOfQuestions('Вопросов больше не осталось!')
-
-
-class OutOfQuestions(Exception):
-    pass
 

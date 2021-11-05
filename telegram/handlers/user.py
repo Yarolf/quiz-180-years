@@ -38,7 +38,7 @@ async def __process_answer_call(callback: CallbackQuery):
     call_back_data = callback.data.lstrip(USER_ANSWER_PREFIX.get_full_prefix())
     answer = Answer.parse(callback.from_user.id, call_back_data)
     answer.save()
-    question_block: QuestionBlock = QuestionBlock.try_get_next_question(answer.question.tour_number)
+    question_block: QuestionBlock = QuestionBlock.get_next_question(answer.question.tour_number)
     await question_block.edit_sent(callback.message, USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
 
 

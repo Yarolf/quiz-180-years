@@ -22,6 +22,33 @@ class User(BaseModel):
     second_name = TextField()
     nick_name = TextField(null=True)
 
+    @classmethod
+    def register_or_update(cls, telegram_id, first_name, second_name, nick_name):
+        try:
+            User.register(telegram_id=telegram_id,
+                          first_name=first_name,
+                          second_name=second_name,
+                          nick_name=nick_name)
+        except cls.UserAlreadyExistsError:
+            User.update(first_name=first_name,
+                        second_name=second_name,
+                        nick_name=nick_name). \
+                where(User.telegram_id == telegram_id). \
+                execute()
+
+    @classmethod
+    def register(cls, telegram_id, first_name, second_name, nick_name):
+        if cls.get_or_none(telegram_id):
+            raise cls.UserAlreadyExistsError('Пользователь уже существует!')
+
+        cls.create(telegram_id=telegram_id,
+                   first_name=first_name,
+                   second_name=second_name,
+                   nick_name=nick_name)
+
+    class UserAlreadyExistsError(Exception):
+        pass
+
     class Meta:
         db_table = 'users'
 

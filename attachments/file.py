@@ -6,8 +6,8 @@ from aiogram.types import Message, InputFile, InputMediaPhoto, InputMediaDocumen
 
 
 class FileType(Enum):
-    IMAGE = 'image'
-    FILE = ''
+    IMAGE = 'img'
+    DOCUMENT = 'doc'
 
 
 class File:
@@ -61,14 +61,15 @@ class Image(File):
 
 class Attachment:
     __possible_attachments = {
-        FileType.IMAGE.value: Image
+        FileType.IMAGE.value: Image,
+        FileType.DOCUMENT.value: File
     }
 
     @classmethod
     def get_attachment_by_file_name(cls, file_name):
         try:
             return cls.__get_attachment_by_file_name(file_name)
-        except UnknownFileTypeError:
+        except (UnknownFileTypeError, AttachmentNotSupportedError):
             raise AttachmentNotSupportedError(f'Такой тип файла не поддерживается: {file_name}')
 
     @classmethod
@@ -78,12 +79,24 @@ class Attachment:
         return attachment_class(file_name)
 
     @classmethod
+    def get_file_type(cls, mimetype):
+        try:
+            cls.__get_file_type(mimetype)
+        except (UnknownFileTypeError, KeyError):
+            raise AttachmentNotSupportedError(f'Не удалось сопоставить тип файла: {mimetype}')
+
+    @classmethod
     def __get_file_type(cls, mimetype):
         """mimetype - кортеж (type, encoding), где type - это строка, вида: type/subtype"""
+        __file_types = {
+            'image': FileType.IMAGE.value,
+            'text': FileType.DOCUMENT.value
+        }
         type_subtype = mimetype[0]
         if not type_subtype:
             raise UnknownFileTypeError('Неизвестный тип файла!')
-        return type_subtype.split('/')[0]
+        mimetype_file_type = type_subtype.split('/')[0]
+        return __file_types[mimetype_file_type]
 
 
 class UnknownFileTypeError(Exception):

@@ -10,6 +10,14 @@ from database.connection import database_connection as db
 from telegram.handlers import user_commands
 
 
+async def on_startup(dispatcher):
+    await bot.set_webhook(config.WEBHOOK_URL, drop_pending_updates=True)
+
+
+async def on_shutdown(dispatcher):
+    await bot.delete_webhook()
+
+
 def prepare():
     logging.basicConfig(level=logging.INFO)
     with db:
@@ -24,8 +32,8 @@ if __name__ == '__main__':
             dispatcher=dp,
             webhook_path=config.WEBHOOK_PATH,
             skip_updates=True,
-            on_startup=lambda dispatcher: bot.set_webhook(config.WEBHOOK_URL, drop_pending_updates=True),
-            on_shutdown=lambda dispatcher: await bot.delete_webhook(),
+            on_startup=on_startup,
+            on_shutdown=on_shutdown,
             host=config.WEBAPP_HOST,
             port=config.WEBAPP_PORT,
         )

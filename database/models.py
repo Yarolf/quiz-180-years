@@ -1,13 +1,12 @@
 import logging
 
 import peewee
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import Message, InlineKeyboardMarkup
 from peewee import Model, TextField, BigIntegerField, ForeignKeyField, DateTimeField
 
 from config import USER_ANSWER_PREFIX
 from database.connection import database_connection as db
-from attachments.file import Attachment, AttachmentNotSupportedError
-from enums.Prefix import CallbackDataPrefix
+from attachments.file import Attachment, GetInputFileError, GetMediaFileError, AttachmentNotSupportedError
 from datetime import datetime
 
 
@@ -66,46 +65,32 @@ class QuestionBlock(BaseModel):
     text = TextField()
     right_answer = ForeignKeyField(PossibleAnswer)
 
-    async def edit_sent(self, message: Message,
-                        prefix: CallbackDataPrefix,
-                        possible_answers: list[PossibleAnswer]):
-        try:
-            await self.__edit_sent(message, prefix, possible_answers)
-        except (AttachmentNotSupportedError, FileNotFoundError) as e:
-            logging.error(e)
-            await message.answer('Что-то пошло не так, мы уже работаем над ошибкой ...')
-
-    async def __edit_sent(self, message: Message,
-                          prefix: CallbackDataPrefix,
-                          possible_answers: list[PossibleAnswer]):
-        attachment = Attachment.get_attachment_by_file_name(self.file_name)
-        input_media = attachment.get_media_file(str(self.text))
-        keyboard = self.__get_keyboard(possible_answers, prefix)
-        await message.edit_media(input_media, reply_markup=keyboard)
-
     async def send_to_user(self, message: Message,
-                           prefix: CallbackDataPrefix,
-                           possible_answers: list[PossibleAnswer]):
-        keyboard = self.__get_keyboard(possible_answers, prefix)
+                           reply_markup: InlineKeyboardMarkup):
         try:
-            await self.__send_to_user(message, keyboard)
-        except (AttachmentNotSupportedError, FileNotFoundError) as e:
+            await self.__send_to_user(message, reply_markup)
+        except (AttachmentNotSupportedError, GetInputFileError) as e:
             logging.error(e)
             await message.answer('Что-то пошло не так, мы уже работаем над ошибкой ...')
-
-    def __get_keyboard(self, possible_answers: list[PossibleAnswer], prefix: CallbackDataPrefix):
-        keyboard = InlineKeyboardMarkup()
-        prefix = prefix.get_full_prefix() + str(self.tour_number) + prefix.split_character
-        buttons = [InlineKeyboardButton(text=str(possible_answer.text),
-                                        callback_data=prefix + str(possible_answer.id))
-                   for possible_answer in possible_answers]
-        keyboard.add(*buttons)
-        return keyboard
 
     async def __send_to_user(self, message: Message, reply_markup):
         attachment = Attachment.get_attachment_by_file_name(self.file_name)
         input_file = attachment.get_input_file()
         await attachment.get_answer_method(message)(input_file, caption=self.text, reply_markup=reply_markup)
+
+    async def edit_sent(self, message: Message,
+                        reply_markup: InlineKeyboardMarkup):
+        try:
+            await self.__edit_sent(message, reply_markup)
+        except (AttachmentNotSupportedError, GetMediaFileError) as e:
+            logging.error(e)
+            await message.answer('Что-то пошло не так, мы уже работаем над ошибкой ...')
+
+    async def __edit_sent(self, message: Message,
+                          reply_markup: InlineKeyboardMarkup):
+        attachment = Attachment.get_attachment_by_file_name(self.file_name)
+        input_media = attachment.get_media_file(self.text)
+        await message.edit_media(input_media, reply_markup=reply_markup)
 
     @classmethod
     def get_next_question(cls, tour_number) -> 'QuestionBlock':
@@ -139,7 +124,9 @@ class UserAnswer(BaseModel):
                    date=datetime.utcnow())
 
     @classmethod
-    def try_get_last_answered_question_number(cls, user_id) -> int:
+    def try_get_last_answered_question_number(cls, user_id) -> BigIntegerField or int:
+        """ Возвращает наибольший номер вопроса, на который ответил пользователь
+        или 0, если ответов от пользователя не найдено"""
         try:
             return cls.get_last_answered(user_id).question.tour_number
         except IndexError:

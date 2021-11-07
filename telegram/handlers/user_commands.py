@@ -5,6 +5,7 @@ from telegram.bot import dispatcher as dp
 import logging
 from database.models import User, QuestionBlock, UserAnswer, PossibleAnswer
 from config import USER_ANSWER_PREFIX
+from telegram.keyboard import InlineKeyboard
 
 
 @dp.message_handler(commands=['start'])
@@ -25,15 +26,20 @@ async def process_register_command(message: types.Message):
 @dp.message_handler(commands=['test'])
 async def process_test_command(message: types.Message):
     answered_question = UserAnswer.try_get_last_answered_question_number(message.from_user.id)
-    await __send_next_question(message, answered_question)
+    await send_next_question(message, answered_question)
+
+
+async def send_next_question(message, answered_question):
+    try:
+        await __send_next_question(message, answered_question)
+    except QuestionBlock.OutOfQuestions:
+        await message.answer('Пройти тест можно только один раз!')
 
 
 async def __send_next_question(message, answered_question):
-    try:
-        question_block = QuestionBlock.get_next_question(answered_question)
-        await question_block.send_to_user(message, USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
-    except QuestionBlock.OutOfQuestions:
-        await message.answer('Пройти тест можно только один раз!')
+    question_block = QuestionBlock.get_next_question(answered_question)
+    keyboard = InlineKeyboard(PossibleAnswer.select().execute(), USER_ANSWER_PREFIX)
+    await question_block.send_to_user(message, keyboard.get_reply_markup(question_block.tour_number))
 
 
 @dp.callback_query_handler(lambda call: call.data.startswith(USER_ANSWER_PREFIX.prefix))
@@ -58,7 +64,8 @@ async def __process_answer_call(callback: CallbackQuery):
         answer.save()
 
     question_block = QuestionBlock.get_next_question(current_question_number)
-    await question_block.edit_sent(callback.message, USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
+    keyboard = InlineKeyboard(PossibleAnswer.select().execute(), USER_ANSWER_PREFIX)
+    await question_block.edit_sent(callback.message, keyboard.get_reply_markup(question_block.tour_number))
 
 
 async def __finish_quiz_for_user(message):

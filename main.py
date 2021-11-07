@@ -7,15 +7,7 @@ from database.models import User, UserAnswer, QuestionBlock, PossibleAnswer
 from database.connection import database_connection as db
 
 # эти импорты необходимы для работы декораторов
-from telegram.handlers import user
-
-
-async def on_startup(dispatcher):
-    await bot.set_webhook(config.WEBHOOK_URL, drop_pending_updates=True)
-
-
-async def on_shutdown(dispatcher):
-    await bot.delete_webhook()
+from telegram.handlers import user_commands
 
 
 def prepare():
@@ -32,8 +24,8 @@ if __name__ == '__main__':
             dispatcher=dp,
             webhook_path=config.WEBHOOK_PATH,
             skip_updates=True,
-            on_startup=on_startup,
-            on_shutdown=on_shutdown,
+            on_startup=lambda dispatcher: bot.set_webhook(config.WEBHOOK_URL, drop_pending_updates=True),
+            on_shutdown=lambda dispatcher: await bot.delete_webhook(),
             host=config.WEBAPP_HOST,
             port=config.WEBAPP_PORT,
         )

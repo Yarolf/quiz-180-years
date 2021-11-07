@@ -6,11 +6,8 @@ from peewee import Model, TextField, BigIntegerField, ForeignKeyField, DateTimeF
 
 from config import USER_ANSWER_PREFIX
 from database.connection import database_connection as db
-from attachments.file import Attachment, AttachmentNotSupportedError
-from enums.Prefix import CallbackDataPrefix
+from attachments.file import Attachment, GetInputFileError, GetMediaFileError, AttachmentNotSupportedError
 from datetime import datetime
-
-from telegram.keyboard import InlineKeyboard
 
 
 class BaseModel(Model):
@@ -72,7 +69,7 @@ class QuestionBlock(BaseModel):
                         reply_markup: InlineKeyboardMarkup):
         try:
             await self.__edit_sent(message, reply_markup)
-        except (AttachmentNotSupportedError, FileNotFoundError) as e:
+        except (AttachmentNotSupportedError, GetMediaFileError) as e:
             logging.error(e)
             await message.answer('Что-то пошло не так, мы уже работаем над ошибкой ...')
 
@@ -86,7 +83,7 @@ class QuestionBlock(BaseModel):
                            reply_markup: InlineKeyboardMarkup):
         try:
             await self.__send_to_user(message, reply_markup)
-        except (AttachmentNotSupportedError, FileNotFoundError) as e:
+        except (AttachmentNotSupportedError, GetInputFileError) as e:
             logging.error(e)
             await message.answer('Что-то пошло не так, мы уже работаем над ошибкой ...')
 
@@ -127,7 +124,7 @@ class UserAnswer(BaseModel):
                    date=datetime.utcnow())
 
     @classmethod
-    def try_get_last_answered_question_number(cls, user_id) -> int:
+    def try_get_last_answered_question_number(cls, user_id) -> BigIntegerField or int:
         """ Возвращает наибольший номер вопроса, на который ответил пользователь
         или 0, если ответов от пользователя не найдено"""
         try:

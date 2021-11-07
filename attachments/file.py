@@ -7,6 +7,7 @@ from aiogram.types import Message, InputFile, InputMediaPhoto, InputMediaDocumen
 
 class FileType(Enum):
     IMAGE = 'image'
+    FILE = ''
 
 
 class File:
@@ -26,7 +27,7 @@ class File:
         try:
             return self.__get_input_file()
         except FileNotFoundError:
-            raise FileNotFoundError(f'Файл {self.file_path} не найден!')
+            raise GetInputFileError(f'Файл {self.file_path} не найден!')
 
     def __get_input_file(self):
         return InputFile(self.file_path)
@@ -34,11 +35,19 @@ class File:
     def get_media_file(self, caption):
         try:
             return self._get_media_file(caption)
-        except FileNotFoundError:
-            raise FileNotFoundError(f'Файл {self.file_path} не найден!')
+        except GetInputFileError:
+            raise GetMediaFileError(f'Файл {self.file_path} не найден!')
 
     def _get_media_file(self, caption):
-        return InputMediaPhoto(self.get_input_file(), caption=caption)
+        return InputMediaDocument(self.get_input_file(), caption=caption)
+
+
+class GetInputFileError(Exception):
+    pass
+
+
+class GetMediaFileError(GetInputFileError):
+    pass
 
 
 class Image(File):
@@ -59,7 +68,7 @@ class Attachment:
     def get_attachment_by_file_name(cls, file_name):
         try:
             return cls.__get_attachment_by_file_name(file_name)
-        except AttachmentNotSupportedError:
+        except UnknownFileTypeError:
             raise AttachmentNotSupportedError(f'Такой тип файла не поддерживается: {file_name}')
 
     @classmethod
@@ -68,13 +77,17 @@ class Attachment:
         attachment_class = cls.__possible_attachments[file_type]
         return attachment_class(file_name)
 
-    @staticmethod
-    def __get_file_type(mimetype):
+    @classmethod
+    def __get_file_type(cls, mimetype):
         """mimetype - кортеж (type, encoding), где type - это строка, вида: type/subtype"""
         type_subtype = mimetype[0]
         if not type_subtype:
-            raise AttachmentNotSupportedError('Неизвестный тип файла!')
+            raise UnknownFileTypeError('Неизвестный тип файла!')
         return type_subtype.split('/')[0]
+
+
+class UnknownFileTypeError(Exception):
+    pass
 
 
 class AttachmentNotSupportedError(Exception):

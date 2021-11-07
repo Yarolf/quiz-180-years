@@ -20,7 +20,7 @@ class User(BaseModel):
     telegram_id = BigIntegerField(primary_key=True)
     first_name = TextField()
     second_name = TextField()
-    nick_name = TextField()
+    nick_name = TextField(null=True)
 
     class Meta:
         db_table = 'users'

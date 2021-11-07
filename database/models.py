@@ -22,6 +22,33 @@ class User(BaseModel):
     second_name = TextField()
     nick_name = TextField(null=True)
 
+    @classmethod
+    def register_or_update(cls, telegram_id, first_name, second_name, nick_name):
+        try:
+            User.register(telegram_id=telegram_id,
+                          first_name=first_name,
+                          second_name=second_name,
+                          nick_name=nick_name)
+        except cls.UserAlreadyExistsError:
+            User.update(first_name=first_name,
+                        second_name=second_name,
+                        nick_name=nick_name). \
+                where(User.telegram_id == telegram_id). \
+                execute()
+
+    @classmethod
+    def register(cls, telegram_id, first_name, second_name, nick_name):
+        if cls.get_or_none(telegram_id):
+            raise cls.UserAlreadyExistsError('Пользователь уже существует!')
+
+        cls.create(telegram_id=telegram_id,
+                   first_name=first_name,
+                   second_name=second_name,
+                   nick_name=nick_name)
+
+    class UserAlreadyExistsError(Exception):
+        pass
+
     class Meta:
         db_table = 'users'
 
@@ -112,14 +139,14 @@ class UserAnswer(BaseModel):
                    date=datetime.utcnow())
 
     @classmethod
-    def try_get_last_answered_question(cls, user_id) -> int:
+    def try_get_last_answered_question_number(cls, user_id) -> int:
         try:
             return cls.get_last_answered(user_id).question.tour_number
         except IndexError:
             return 0
 
     @classmethod
-    def get_last_answered(cls, user_id):
+    def get_last_answered(cls, user_id) -> 'UserAnswer':
         query: list[cls] = cls.select(). \
             where(cls.user == user_id). \
             order_by(cls.question.desc()). \

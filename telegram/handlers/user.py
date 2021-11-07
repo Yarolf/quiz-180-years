@@ -5,7 +5,6 @@ from telegram.bot import dispatcher as dp
 import logging
 from database.models import User, QuestionBlock, UserAnswer, PossibleAnswer
 from config import USER_ANSWER_PREFIX
-import peewee
 
 
 @dp.message_handler(commands=['start'])
@@ -17,22 +16,15 @@ async def process_start_command(message: types.Message):
 
 @dp.message_handler(commands=['register'])
 async def process_register_command(message: types.Message):
-    try:
-        User.get_or_create(telegram_id=message.from_user.id,
-                           first_name=message.from_user.first_name,
-                           second_name=message.from_user.last_name,
-                           nick_name=message.from_user.username)
-    except peewee.IntegrityError:
-        User.update(first_name=message.from_user.first_name,
-                    second_name=message.from_user.last_name,
-                    nick_name=message.from_user.username).\
-            where(User.telegram_id == message.from_user.id).\
-            execute()
+    User.register_or_update(message.from_user.id,
+                            message.from_user.first_name,
+                            message.from_user.last_name,
+                            message.from_user.username)
 
 
 @dp.message_handler(commands=['test'])
 async def process_test_command(message: types.Message):
-    answered_question = UserAnswer.try_get_last_answered_question(message.from_user.id)
+    answered_question = UserAnswer.try_get_last_answered_question_number(message.from_user.id)
     await __send_next_question(message, answered_question)
 
 
@@ -58,7 +50,7 @@ async def __process_answer_call(callback: CallbackQuery):
     call_back_data = callback.data.lstrip(USER_ANSWER_PREFIX.get_full_prefix())
 
     answer = UserAnswer.parse(callback.from_user.id, call_back_data)
-    last_saved_question_number = UserAnswer.try_get_last_answered_question(callback.from_user.id)
+    last_saved_question_number = UserAnswer.try_get_last_answered_question_number(callback.from_user.id)
 
     current_question_number = last_saved_question_number
     if answer.question.tour_number > current_question_number:

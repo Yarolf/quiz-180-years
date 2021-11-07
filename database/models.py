@@ -65,20 +65,6 @@ class QuestionBlock(BaseModel):
     text = TextField()
     right_answer = ForeignKeyField(PossibleAnswer)
 
-    async def edit_sent(self, message: Message,
-                        reply_markup: InlineKeyboardMarkup):
-        try:
-            await self.__edit_sent(message, reply_markup)
-        except (AttachmentNotSupportedError, GetMediaFileError) as e:
-            logging.error(e)
-            await message.answer('Что-то пошло не так, мы уже работаем над ошибкой ...')
-
-    async def __edit_sent(self, message: Message,
-                          reply_markup: InlineKeyboardMarkup):
-        attachment = Attachment.get_attachment_by_file_name(self.file_name)
-        input_media = attachment.get_media_file(str(self.text))
-        await message.edit_media(input_media, reply_markup=reply_markup)
-
     async def send_to_user(self, message: Message,
                            reply_markup: InlineKeyboardMarkup):
         try:
@@ -91,6 +77,20 @@ class QuestionBlock(BaseModel):
         attachment = Attachment.get_attachment_by_file_name(self.file_name)
         input_file = attachment.get_input_file()
         await attachment.get_answer_method(message)(input_file, caption=self.text, reply_markup=reply_markup)
+
+    async def edit_sent(self, message: Message,
+                        reply_markup: InlineKeyboardMarkup):
+        try:
+            await self.__edit_sent(message, reply_markup)
+        except (AttachmentNotSupportedError, GetMediaFileError) as e:
+            logging.error(e)
+            await message.answer('Что-то пошло не так, мы уже работаем над ошибкой ...')
+
+    async def __edit_sent(self, message: Message,
+                          reply_markup: InlineKeyboardMarkup):
+        attachment = Attachment.get_attachment_by_file_name(self.file_name)
+        input_media = attachment.get_media_file(self.text)
+        await message.edit_media(input_media, reply_markup=reply_markup)
 
     @classmethod
     def get_next_question(cls, tour_number) -> 'QuestionBlock':

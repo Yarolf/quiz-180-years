@@ -128,6 +128,8 @@ class UserAnswer(BaseModel):
 
     @classmethod
     def try_get_last_answered_question_number(cls, user_id) -> int:
+        """ Возвращает наибольший номер вопроса, на который ответил пользователь
+        или 0, если ответов от пользователя не найдено"""
         try:
             return cls.get_last_answered(user_id).question.tour_number
         except IndexError:

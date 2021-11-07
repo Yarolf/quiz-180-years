@@ -19,7 +19,7 @@ class BaseModel(Model):
 class User(BaseModel):
     telegram_id = BigIntegerField(primary_key=True)
     first_name = TextField()
-    second_name = TextField()
+    second_name = TextField(null=True)
     nick_name = TextField(null=True)
 
     @classmethod

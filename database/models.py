@@ -83,9 +83,9 @@ class QuestionBlock(BaseModel):
         await message.edit_media(input_media, reply_markup=reply_markup)
 
     async def send_to_user(self, message: Message,
-                           keyboard: InlineKeyboardMarkup):
+                           reply_markup: InlineKeyboardMarkup):
         try:
-            await self.__send_to_user(message, keyboard)
+            await self.__send_to_user(message, reply_markup)
         except (AttachmentNotSupportedError, FileNotFoundError) as e:
             logging.error(e)
             await message.answer('Что-то пошло не так, мы уже работаем над ошибкой ...')

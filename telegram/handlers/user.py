@@ -5,7 +5,6 @@ from telegram.bot import dispatcher as dp
 import logging
 from database.models import User, QuestionBlock, UserAnswer, PossibleAnswer
 from config import USER_ANSWER_PREFIX
-import peewee
 
 
 @dp.message_handler(commands=['start'])

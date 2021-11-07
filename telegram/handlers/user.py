@@ -38,7 +38,7 @@ async def send_next_question(message, answered_question):
 
 async def __send_next_question(message, answered_question):
     question_block = QuestionBlock.get_next_question(answered_question)
-    keyboard = InlineKeyboard(USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
+    keyboard = InlineKeyboard(PossibleAnswer.select().execute(), USER_ANSWER_PREFIX)
     await question_block.send_to_user(message, keyboard.get_reply_markup(question_block.tour_number))
 
 
@@ -64,7 +64,7 @@ async def __process_answer_call(callback: CallbackQuery):
         answer.save()
 
     question_block = QuestionBlock.get_next_question(current_question_number)
-    keyboard = InlineKeyboard(USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
+    keyboard = InlineKeyboard(PossibleAnswer.select().execute(), USER_ANSWER_PREFIX)
     await question_block.edit_sent(callback.message, keyboard.get_reply_markup(question_block.tour_number))
 
 

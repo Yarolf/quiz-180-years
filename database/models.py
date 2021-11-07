@@ -69,18 +69,18 @@ class QuestionBlock(BaseModel):
     right_answer = ForeignKeyField(PossibleAnswer)
 
     async def edit_sent(self, message: Message,
-                        keyboard: InlineKeyboardMarkup):
+                        reply_markup: InlineKeyboardMarkup):
         try:
-            await self.__edit_sent(message, keyboard)
+            await self.__edit_sent(message, reply_markup)
         except (AttachmentNotSupportedError, FileNotFoundError) as e:
             logging.error(e)
             await message.answer('Что-то пошло не так, мы уже работаем над ошибкой ...')
 
     async def __edit_sent(self, message: Message,
-                          keyboard: InlineKeyboardMarkup):
+                          reply_markup: InlineKeyboardMarkup):
         attachment = Attachment.get_attachment_by_file_name(self.file_name)
         input_media = attachment.get_media_file(str(self.text))
-        await message.edit_media(input_media, reply_markup=keyboard)
+        await message.edit_media(input_media, reply_markup=reply_markup)
 
     async def send_to_user(self, message: Message,
                            keyboard: InlineKeyboardMarkup):

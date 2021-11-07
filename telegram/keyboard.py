@@ -9,7 +9,7 @@ class InlineKeyboard:
         self.possible_answers = possible_answers
         self.prefix = prefix
 
-    def get_keyboard_markup(self, tour_number) -> InlineKeyboardMarkup:
+    def get_reply_markup(self, tour_number) -> InlineKeyboardMarkup:
         keyboard = InlineKeyboardMarkup()
         prefix = self.prefix.get_full_prefix() + str(tour_number) + self.prefix.split_character
         buttons = [InlineKeyboardButton(text=str(possible_answer.text),

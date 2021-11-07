@@ -39,7 +39,7 @@ async def send_next_question(message, answered_question):
 async def __send_next_question(message, answered_question):
     question_block = QuestionBlock.get_next_question(answered_question)
     keyboard = InlineKeyboard(USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
-    await question_block.send_to_user(message, keyboard.get_keyboard_markup(question_block.tour_number))
+    await question_block.send_to_user(message, keyboard.get_reply_markup(question_block.tour_number))
 
 
 @dp.callback_query_handler(lambda call: call.data.startswith(USER_ANSWER_PREFIX.prefix))
@@ -65,7 +65,7 @@ async def __process_answer_call(callback: CallbackQuery):
 
     question_block = QuestionBlock.get_next_question(current_question_number)
     keyboard = InlineKeyboard(USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
-    await question_block.edit_sent(callback.message, keyboard.get_keyboard_markup(question_block.tour_number))
+    await question_block.edit_sent(callback.message, keyboard.get_reply_markup(question_block.tour_number))
 
 
 async def __finish_quiz_for_user(message):

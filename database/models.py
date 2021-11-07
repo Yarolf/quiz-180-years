@@ -112,14 +112,14 @@ class UserAnswer(BaseModel):
                    date=datetime.utcnow())
 
     @classmethod
-    def try_get_last_answered_question(cls, user_id) -> int:
+    def try_get_last_answered_question_number(cls, user_id) -> int:
         try:
             return cls.get_last_answered(user_id).question.tour_number
         except IndexError:
             return 0
 
     @classmethod
-    def get_last_answered(cls, user_id):
+    def get_last_answered(cls, user_id) -> 'UserAnswer':
         query: list[cls] = cls.select(). \
             where(cls.user == user_id). \
             order_by(cls.question.desc()). \

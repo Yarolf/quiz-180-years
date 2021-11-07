@@ -114,7 +114,7 @@ class UserAnswer(BaseModel):
     @classmethod
     def try_get_last_answered_question(cls, user_id) -> int:
         try:
-            return cls.get_last_answered(user_id).question.tour_number.to_value(int)
+            return cls.get_last_answered(user_id).question.tour_number
         except IndexError:
             return 0
 

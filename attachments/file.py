@@ -15,8 +15,8 @@ class File:
 
     @staticmethod
     def __get_abs_path(file_name, files_folder_name):
-        current_direction = os.path.dirname(__file__)
-        return os.path.join(current_direction, files_folder_name, file_name)
+        current_directory = os.path.dirname(__file__)
+        return os.path.join(current_directory, files_folder_name, file_name)
 
     @staticmethod
     def get_answer_method(message: Message):

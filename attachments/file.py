@@ -11,10 +11,10 @@ class FileType(Enum):
 
 class File:
     def __init__(self, file_name):
-        self.file_path = self.__get_abs_path(file_name, 'files')
+        self.file_path = self.__get_abs_path('files', file_name)
 
     @staticmethod
-    def __get_abs_path(file_name, files_folder_name):
+    def __get_abs_path(files_folder_name, file_name):
         current_directory = os.path.dirname(__file__)
         return os.path.join(current_directory, files_folder_name, file_name)
 

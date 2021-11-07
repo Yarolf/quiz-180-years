@@ -5,6 +5,7 @@ from telegram.bot import dispatcher as dp
 import logging
 from database.models import User, QuestionBlock, UserAnswer, PossibleAnswer
 from config import USER_ANSWER_PREFIX
+from telegram.keyboard import InlineKeyboard
 
 
 @dp.message_handler(commands=['start'])
@@ -31,7 +32,8 @@ async def process_test_command(message: types.Message):
 async def __send_next_question(message, answered_question):
     try:
         question_block = QuestionBlock.get_next_question(answered_question)
-        await question_block.send_to_user(message, USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
+        keyboard = InlineKeyboard(USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
+        await question_block.send_to_user(message, keyboard.get_keyboard_markup(question_block.tour_number))
     except QuestionBlock.OutOfQuestions:
         await message.answer('Пройти тест можно только один раз!')
 
@@ -58,7 +60,8 @@ async def __process_answer_call(callback: CallbackQuery):
         answer.save()
 
     question_block = QuestionBlock.get_next_question(current_question_number)
-    await question_block.edit_sent(callback.message, USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
+    keyboard = InlineKeyboard(USER_ANSWER_PREFIX, PossibleAnswer.select().execute())
+    await question_block.edit_sent(callback.message, keyboard.get_keyboard_markup(question_block.tour_number))
 
 
 async def __finish_quiz_for_user(message):

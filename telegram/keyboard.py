@@ -1,6 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from database.models import PossibleAnswer
+from telegram.utils.callback_data import CallbackAnswerData
 from telegram.utils.enums.prefix import CallbackDataPrefix
 
 
@@ -9,11 +10,12 @@ class InlineKeyboard:
         self.possible_answers = possible_answers
         self.prefix = prefix
 
-    def get_reply_markup(self, tour_number) -> InlineKeyboardMarkup:
+    def get_reply_markup(self, question_number) -> InlineKeyboardMarkup:
         keyboard = InlineKeyboardMarkup()
-        prefix = self.prefix.get_full_prefix() + str(tour_number) + self.prefix.split_character
         buttons = [InlineKeyboardButton(text=str(possible_answer.text),
-                                        callback_data=prefix + str(possible_answer.id))
+                                        callback_data=CallbackAnswerData(prefix=self.prefix,
+                                                                         question_number=question_number,
+                                                                         answer_id=possible_answer.id).get_full())
                    for possible_answer in self.possible_answers]
         keyboard.add(*buttons)
         return keyboard

@@ -9,6 +9,8 @@ from database.connection import database_connection as db
 from attachments.file import Attachment, GetInputFileError, GetMediaFileError, AttachmentNotSupportedError
 from datetime import datetime
 
+from telegram.utils.callback_data import CallbackAnswerData
+
 
 class BaseModel(Model):
     class Meta:
@@ -115,12 +117,10 @@ class UserAnswer(BaseModel):
 
     @classmethod
     def parse(cls, user, callback_data) -> 'UserAnswer':
-        split_data = callback_data.split(USER_ANSWER_PREFIX.split_character)
-        question_number = int(split_data[0])
-        answer_id = split_data[1]
+        callback_answer_data = CallbackAnswerData.parse(USER_ANSWER_PREFIX, callback_data)
         return cls(user=user,
-                   question=question_number,
-                   answer=answer_id,
+                   question=callback_answer_data.question_number,
+                   answer=callback_answer_data.answer_id,
                    date=datetime.utcnow())
 
     @classmethod

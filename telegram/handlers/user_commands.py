@@ -39,7 +39,8 @@ async def send_next_question(message, answered_question):
 async def __send_next_question(message, answered_question):
     question_block = QuestionBlock.get_next_question(answered_question)
     keyboard = InlineKeyboard(PossibleAnswer.select().execute(), USER_ANSWER_PREFIX)
-    await question_block.send_to_user(message, keyboard.get_reply_markup(question_block.tour_number))
+    reply_markup = keyboard.get_reply_markup(question_block.tour_number)
+    await question_block.send_to_user(message, reply_markup)
 
 
 @dp.callback_query_handler(lambda call: call.data.startswith(USER_ANSWER_PREFIX.prefix))

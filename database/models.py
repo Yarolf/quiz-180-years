@@ -129,11 +129,18 @@ class UserAnswer(BaseModel):
         или 0, если ответов от пользователя не найдено"""
         try:
             return cls.get_last_answered(user_id).question.tour_number
-        except IndexError:
+        except AnswersNotExistsError:
             return 0
 
     @classmethod
     def get_last_answered(cls, user_id) -> 'UserAnswer':
+        try:
+            return cls.__get_last_answered(user_id)
+        except IndexError:
+            raise AnswersNotExistsError('Пользователь ещё не давал ответов!')
+
+    @classmethod
+    def __get_last_answered(cls, user_id) -> 'UserAnswer':
         query: list[cls] = cls.select(). \
             where(cls.user == user_id). \
             order_by(cls.question.desc()). \
@@ -142,3 +149,7 @@ class UserAnswer(BaseModel):
 
     class Meta:
         db_table = 'user_answers'
+
+
+class AnswersNotExistsError(Exception):
+    pass

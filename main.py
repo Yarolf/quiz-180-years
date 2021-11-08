@@ -7,7 +7,8 @@ from database.models import User, UserAnswer, QuestionBlock, PossibleAnswer
 from database.connection import database_connection as db
 
 # эти импорты необходимы для работы декораторов
-from telegram.handlers import user_commands
+from telegram.handlers.message_handlers import user_message_handler
+from telegram.handlers.error_handlers import error_handler
 
 
 async def on_startup(dispatcher):

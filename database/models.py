@@ -98,9 +98,9 @@ class QuestionBlock(BaseModel):
         try:
             return cls.get(next_tour_number)
         except peewee.DoesNotExist:
-            raise cls.OutOfQuestions('Вопросов больше не осталось!')
+            raise cls.OutOfQuestionsError('Вопросов больше не осталось!')
 
-    class OutOfQuestions(Exception):
+    class OutOfQuestionsError(Exception):
         pass
 
     class Meta:
@@ -124,16 +124,23 @@ class UserAnswer(BaseModel):
                    date=datetime.utcnow())
 
     @classmethod
-    def try_get_last_answered_question_number(cls, user_id) -> BigIntegerField or int:
+    def get_last_answered_question_number_or_zero(cls, user_id) -> BigIntegerField or int:
         """ Возвращает наибольший номер вопроса, на который ответил пользователь
         или 0, если ответов от пользователя не найдено"""
         try:
             return cls.get_last_answered(user_id).question.tour_number
-        except IndexError:
+        except AnswersNotExistsError:
             return 0
 
     @classmethod
     def get_last_answered(cls, user_id) -> 'UserAnswer':
+        try:
+            return cls.__get_last_answered(user_id)
+        except IndexError:
+            raise AnswersNotExistsError('Пользователь ещё не давал ответов!')
+
+    @classmethod
+    def __get_last_answered(cls, user_id) -> 'UserAnswer':
         query: list[cls] = cls.select(). \
             where(cls.user == user_id). \
             order_by(cls.question.desc()). \
@@ -142,3 +149,7 @@ class UserAnswer(BaseModel):
 
     class Meta:
         db_table = 'user_answers'
+
+
+class AnswersNotExistsError(Exception):
+    pass

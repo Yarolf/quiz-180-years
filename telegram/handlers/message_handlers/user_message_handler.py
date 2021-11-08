@@ -25,28 +25,29 @@ async def process_register_command(message: types.Message):
 
 @dp.message_handler(commands=['test'])
 async def process_test_command(message: types.Message):
-    answered_question = UserAnswer.try_get_last_answered_question_number(message.from_user.id)
+    answered_question = UserAnswer.get_last_answered_question_number_or_zero(message.from_user.id)
     await send_next_question(message, answered_question)
 
 
 async def send_next_question(message, answered_question):
     try:
         await __send_next_question(message, answered_question)
-    except QuestionBlock.OutOfQuestions:
+    except QuestionBlock.OutOfQuestionsError:
         await message.answer('Пройти тест можно только один раз!')
 
 
 async def __send_next_question(message, answered_question):
     question_block = QuestionBlock.get_next_question(answered_question)
     keyboard = InlineKeyboard(PossibleAnswer.select().execute(), USER_ANSWER_PREFIX)
-    await question_block.send_to_user(message, keyboard.get_reply_markup(question_block.tour_number))
+    reply_markup = keyboard.get_reply_markup(question_block.tour_number)
+    await question_block.send_to_user(message, reply_markup)
 
 
 @dp.callback_query_handler(lambda call: call.data.startswith(USER_ANSWER_PREFIX.prefix))
 async def process_answer_call(callback: CallbackQuery):
     try:
         await __process_answer_call(callback)
-    except QuestionBlock.OutOfQuestions:
+    except QuestionBlock.OutOfQuestionsError:
         await __finish_quiz_for_user(callback.message)
     finally:
         await callback.answer()
@@ -56,7 +57,7 @@ async def __process_answer_call(callback: CallbackQuery):
     call_back_data = callback.data.lstrip(USER_ANSWER_PREFIX.get_full_prefix())
 
     answer = UserAnswer.parse(callback.from_user.id, call_back_data)
-    last_saved_question_number = UserAnswer.try_get_last_answered_question_number(callback.from_user.id)
+    last_saved_question_number = UserAnswer.get_last_answered_question_number_or_zero(callback.from_user.id)
 
     current_question_number = last_saved_question_number
     if answer.question.tour_number > current_question_number:

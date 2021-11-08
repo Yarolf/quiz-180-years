@@ -1,11 +1,11 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from database.models import PossibleAnswer
-from telegram.utils.enums.Prefix import CallbackDataPrefix
+from telegram.utils.enums.prefix import CallbackDataPrefix
 
 
 class InlineKeyboard:
-    def __init__(self, possible_answers: list[PossibleAnswer], prefix: CallbackDataPrefix):
+    def __init__(self, prefix: CallbackDataPrefix, possible_answers: list[PossibleAnswer]):
         self.possible_answers = possible_answers
         self.prefix = prefix
 

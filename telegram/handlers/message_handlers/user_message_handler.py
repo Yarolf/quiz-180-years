@@ -11,12 +11,12 @@ from telegram.keyboard import InlineKeyboard
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
     logging.info(f'Пользователь {message.from_user.first_name} {message.from_user.last_name} ввёл команду start')
-    await message.answer('Добрый день! Перед началом теста приглашаем пройти регистрацию.')
     await process_register_command(message)
 
 
 @dp.message_handler(commands=['register'])
 async def process_register_command(message: types.Message):
+    await message.answer('Добрый день! Перед началом теста приглашаем пройти регистрацию.')
     await request_contact(message)
 
 
@@ -42,6 +42,9 @@ async def get_contact(message: types.Message):
 
 @dp.message_handler(commands=['test'])
 async def process_test_command(message: types.Message):
+    if not User.get_or_none(message.from_user.id):
+        await process_register_command(message)
+        return
     answered_question = UserAnswer.get_last_answered_question_number_or_zero(message.from_user.id)
     await send_next_question(message, answered_question)
 
@@ -71,6 +74,9 @@ async def process_answer_call(callback: CallbackQuery):
 
 
 async def __process_answer_call(callback: CallbackQuery):
+    if not User.get_or_none(callback.from_user.id):
+        await process_register_command(callback.message)
+        return
     call_back_data = callback.data.lstrip(USER_ANSWER_PREFIX.get_full_prefix())
 
     answer = UserAnswer.parse(callback.from_user.id, call_back_data)

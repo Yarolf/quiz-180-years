@@ -124,7 +124,7 @@ class UserAnswer(BaseModel):
                    date=datetime.utcnow())
 
     @classmethod
-    def try_get_last_answered_question_number(cls, user_id) -> BigIntegerField or int:
+    def get_last_answered_question_number_or_zero(cls, user_id) -> BigIntegerField or int:
         """ Возвращает наибольший номер вопроса, на который ответил пользователь
         или 0, если ответов от пользователя не найдено"""
         try:

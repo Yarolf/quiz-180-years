@@ -98,9 +98,9 @@ class QuestionBlock(BaseModel):
         try:
             return cls.get(next_tour_number)
         except peewee.DoesNotExist:
-            raise cls.OutOfQuestions('Вопросов больше не осталось!')
+            raise cls.OutOfQuestionsError('Вопросов больше не осталось!')
 
-    class OutOfQuestions(Exception):
+    class OutOfQuestionsError(Exception):
         pass
 
     class Meta:

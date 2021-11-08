@@ -32,7 +32,7 @@ async def process_test_command(message: types.Message):
 async def send_next_question(message, answered_question):
     try:
         await __send_next_question(message, answered_question)
-    except QuestionBlock.OutOfQuestions:
+    except QuestionBlock.OutOfQuestionsError:
         await message.answer('Пройти тест можно только один раз!')
 
 
@@ -46,7 +46,7 @@ async def __send_next_question(message, answered_question):
 async def process_answer_call(callback: CallbackQuery):
     try:
         await __process_answer_call(callback)
-    except QuestionBlock.OutOfQuestions:
+    except QuestionBlock.OutOfQuestionsError:
         await __finish_quiz_for_user(callback.message)
     finally:
         await callback.answer()

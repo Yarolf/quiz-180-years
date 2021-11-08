@@ -10,19 +10,17 @@ from telegram.keyboard import InlineKeyboard
 
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
-    logging.info(f'Пользователь {message.from_user.first_name} {message.from_user.last_name} ввёл команду start')
-    await send_about(message)
+    logging.info(f'{message.from_user.first_name} {message.from_user.last_name} ввёл команду start')
     await process_register_command(message)
 
 
 @dp.message_handler(commands=['about'])
 async def send_about(message: types.Message):
-    await message.answer('Добрый день! Это бот для прохождения теста, посвященного 180 летию Сбера!')
+    await message.answer('Добрый день! Это бот для прохождения викторины, посвященной 180 летию Сбера!')
 
 
 @dp.message_handler(commands=['help'])
 async def process_help_command(message: types.Message):
-    await send_about(message)
     await message.answer("""
     Список доступных команд:
     /about - информация о боте
@@ -33,7 +31,7 @@ async def process_help_command(message: types.Message):
 
 @dp.message_handler(commands=['register'])
 async def process_register_command(message: types.Message):
-    await message.answer('Перед началом теста приглашаем пройти регистрацию.')
+    await message.answer('Добрый день! Перед началом викторины приглашаем пройти регистрацию.')
     await request_contact(message)
 
 
@@ -41,24 +39,28 @@ async def process_register_command(message: types.Message):
 async def request_contact(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(types.KeyboardButton(text='Предоставить телефон', request_contact=True))
+    logging.info(f'Запросил контакт у {message.from_user.first_name} {message.from_user.last_name}')
     await message.answer('Для того, чтобы мы смогли связаться с вами в случае победы, '
-                         'предоставьте, пожалуйста, свой контактный телефон, '
+                         'предоставьте, пожалуйста, свои контактные данные, '
                          'нажав на кнопку ниже.', reply_markup=keyboard)
 
 
 @dp.message_handler(content_types=['contact'])
 async def register(message: types.Message):
+    logging.info(f'Получил контакт от {message.from_user.first_name} {message.from_user.last_name}')
     User.register_or_update(message.from_user.id,
                             message.from_user.first_name,
                             message.from_user.last_name,
                             message.from_user.username,
                             message.contact.phone_number)
+    logging.info(f'Зарегистрировал {message.from_user.first_name} {message.from_user.last_name}')
     await message.answer('Регистрация прошла успешно!', reply_markup=types.ReplyKeyboardRemove())
     await message.answer('Для прохождения теста введите команду  /test')
 
 
 @dp.message_handler(commands=['test'])
 async def process_test_command(message: types.Message):
+    logging.info(f'{message.from_user.first_name} {message.from_user.last_name} ввёл команду test')
     if not User.get_or_none(message.from_user.id):
         await process_register_command(message)
         return

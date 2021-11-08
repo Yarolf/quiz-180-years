@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from database.models import PossibleAnswer
-from enums.Prefix import CallbackDataPrefix
+from telegram.utils.enums.Prefix import CallbackDataPrefix
 
 
 class InlineKeyboard:

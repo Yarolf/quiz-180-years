@@ -11,12 +11,29 @@ from telegram.keyboard import InlineKeyboard
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
     logging.info(f'Пользователь {message.from_user.first_name} {message.from_user.last_name} ввёл команду start')
+    await send_about(message)
     await process_register_command(message)
+
+
+@dp.message_handler(commands=['about'])
+async def send_about(message: types.Message):
+    await message.answer('Добрый день! Это бот для прохождения теста, посвященного 180 летию Сбера!')
+
+
+@dp.message_handler(commands=['help'])
+async def process_help_command(message: types.Message):
+    await send_about(message)
+    await message.answer("""
+    Список доступных команд:
+    /about - информация о боте
+    /register - зарегистрироваться
+    /update_info - обновить данных профиля
+    /test - пройти тест""")
 
 
 @dp.message_handler(commands=['register'])
 async def process_register_command(message: types.Message):
-    await message.answer('Добрый день! Перед началом теста приглашаем пройти регистрацию.')
+    await message.answer('Перед началом теста приглашаем пройти регистрацию.')
     await request_contact(message)
 
 
@@ -25,12 +42,12 @@ async def request_contact(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(types.KeyboardButton(text='Предоставить телефон', request_contact=True))
     await message.answer('Для того, чтобы мы смогли связаться с вами в случае победы, '
-                         'предоставьте, пожалуйста свой контактный телефон, '
+                         'предоставьте, пожалуйста, свой контактный телефон, '
                          'нажав на кнопку ниже.', reply_markup=keyboard)
 
 
 @dp.message_handler(content_types=['contact'])
-async def get_contact(message: types.Message):
+async def register(message: types.Message):
     User.register_or_update(message.from_user.id,
                             message.from_user.first_name,
                             message.from_user.last_name,

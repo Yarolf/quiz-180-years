@@ -11,28 +11,33 @@ from telegram.keyboard import InlineKeyboard
 @dp.message_handler(commands=['start'])
 async def process_start_command(message: types.Message):
     logging.info(f'Пользователь {message.from_user.first_name} {message.from_user.last_name} ввёл команду start')
+    await message.answer('Добрый день! Перед началом теста приглашаем пройти регистрацию.')
     await process_register_command(message)
-    await process_test_command(message)
 
 
 @dp.message_handler(commands=['register'])
 async def process_register_command(message: types.Message):
-    User.register_or_update(message.from_user.id,
-                            message.from_user.first_name,
-                            message.from_user.last_name,
-                            message.from_user.username)
+    await request_contact(message)
 
 
-@dp.message_handler(commands=['give_contact'])
+@dp.message_handler(commands=['update_info'])
 async def request_contact(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(types.KeyboardButton(text='Предоставить телефон', request_contact=True))
-    await message.answer('Нажмите на кнопку для отправки вашего контакта.', reply_markup=keyboard)
+    await message.answer('Для того, чтобы мы смогли связаться с вами в случае победы, '
+                         'предоставьте, пожалуйста свой контактный телефон, '
+                         'нажав на кнопку ниже.', reply_markup=keyboard)
 
 
 @dp.message_handler(content_types=['contact'])
 async def get_contact(message: types.Message):
-    await message.answer(message.contact.phone_number, reply_markup=types.ReplyKeyboardRemove())
+    User.register_or_update(message.from_user.id,
+                            message.from_user.first_name,
+                            message.from_user.last_name,
+                            message.from_user.username,
+                            message.contact.phone_number)
+    await message.answer('Регистрация прошла успешно!', reply_markup=types.ReplyKeyboardRemove())
+    await message.answer('Для прохождения теста введите команду  /test')
 
 
 @dp.message_handler(commands=['test'])

@@ -11,8 +11,8 @@ class SplitCharacter(Enum):
 
 class CallbackDataPrefix:
     def __init__(self, prefix, split_character):
-        self.prefix = prefix
-        self.split_character = split_character
+        self.prefix: str = prefix
+        self.split_character: str = split_character
 
     def get_full_prefix(self):
         return self.prefix + self.split_character

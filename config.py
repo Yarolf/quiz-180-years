@@ -1,6 +1,6 @@
 import os
 
-from enums.Prefix import CallbackDataPrefix, Prefix, SplitCharacter
+from telegram.utils.enums.prefix import CallbackDataPrefix, Prefix, SplitCharacter
 
 TOKEN = os.getenv('BOT_TOKEN')
 

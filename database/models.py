@@ -9,6 +9,8 @@ from database.connection import database_connection as db
 from attachments.file import Attachment, GetInputFileError, GetMediaFileError, AttachmentNotSupportedError
 from datetime import datetime
 
+from telegram.utils.callback_data import CallbackAnswerData
+
 
 class BaseModel(Model):
     class Meta:
@@ -20,30 +22,34 @@ class User(BaseModel):
     first_name = TextField()
     second_name = TextField(null=True)
     nick_name = TextField(null=True)
+    phone_number = TextField()
 
     @classmethod
-    def register_or_update(cls, telegram_id, first_name, second_name, nick_name):
+    def register_or_update(cls, telegram_id, first_name, second_name, nick_name, phone_number=None):
         try:
             User.register(telegram_id=telegram_id,
                           first_name=first_name,
                           second_name=second_name,
-                          nick_name=nick_name)
+                          nick_name=nick_name,
+                          phone_number=phone_number)
         except cls.UserAlreadyExistsError:
             User.update(first_name=first_name,
                         second_name=second_name,
-                        nick_name=nick_name). \
+                        nick_name=nick_name,
+                        phone_number=phone_number). \
                 where(User.telegram_id == telegram_id). \
                 execute()
 
     @classmethod
-    def register(cls, telegram_id, first_name, second_name, nick_name):
+    def register(cls, telegram_id, first_name, second_name, nick_name, phone_number):
         if cls.get_or_none(telegram_id):
             raise cls.UserAlreadyExistsError('Пользователь уже существует!')
 
         cls.create(telegram_id=telegram_id,
                    first_name=first_name,
                    second_name=second_name,
-                   nick_name=nick_name)
+                   nick_name=nick_name,
+                   phone_number=phone_number)
 
     class UserAlreadyExistsError(Exception):
         pass
@@ -115,12 +121,10 @@ class UserAnswer(BaseModel):
 
     @classmethod
     def parse(cls, user, callback_data) -> 'UserAnswer':
-        split_data = callback_data.split(USER_ANSWER_PREFIX.split_character)
-        question_number = int(split_data[0])
-        answer_id = split_data[1]
+        callback_answer_data = CallbackAnswerData.parse(USER_ANSWER_PREFIX, callback_data)
         return cls(user=user,
-                   question=question_number,
-                   answer=answer_id,
+                   question=callback_answer_data.question_number,
+                   answer=callback_answer_data.answer_id,
                    date=datetime.utcnow())
 
     @classmethod

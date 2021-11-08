@@ -23,6 +23,18 @@ async def process_register_command(message: types.Message):
                             message.from_user.username)
 
 
+@dp.message_handler(commands=['give_contact'])
+async def request_contact(message: types.Message):
+    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(types.KeyboardButton(text='Предоставить телефон', request_contact=True))
+    await message.answer('Нажмите на кнопку для отправки вашего контакта.', reply_markup=keyboard)
+
+
+@dp.message_handler(content_types=['contact'])
+async def get_contact(message: types.Message):
+    await message.answer(message.contact.phone_number, reply_markup=types.ReplyKeyboardRemove())
+
+
 @dp.message_handler(commands=['test'])
 async def process_test_command(message: types.Message):
     answered_question = UserAnswer.get_last_answered_question_number_or_zero(message.from_user.id)

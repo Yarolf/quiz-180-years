@@ -13,7 +13,7 @@ class BaseCommandHandler:
     @staticmethod
     async def process_start_command(message: types.Message):
         logging.info(f'{message.from_user.first_name} {message.from_user.last_name} ввёл команду start')
-        await registration_handler.process_register_command(message)
+        await registration_handler.UserRegistrar.process_register_command(message)
 
     @classmethod
     async def process_help_command(cls, message: types.Message):

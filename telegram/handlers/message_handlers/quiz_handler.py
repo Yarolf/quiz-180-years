@@ -11,7 +11,7 @@ class QuizSender:
     async def send_or_register(self, message: types.Message):
         logging.info(f'{message.from_user.first_name} {message.from_user.last_name} запросил викторину')
         if not User.get_or_none(message.from_user.id):
-            await registration_handler.process_register_command(message)
+            await registration_handler.UserRegistrar.process_register_command(message)
             return
         answered_question = UserAnswer.get_last_answered_question_number_or_zero(message.from_user.id)
         await self.__send_not_answered_question_or_refuse(message, answered_question)
@@ -45,7 +45,7 @@ class QuizAnswerProcessor:
     @staticmethod
     async def __process_answer_call(callback: CallbackQuery):
         if not User.get_or_none(callback.from_user.id):
-            await registration_handler.process_register_command(callback.message)
+            await UserRegistrar.process_register_command(callback.message)
             return
         call_back_data = callback.data.lstrip(USER_ANSWER_PREFIX.get_full_prefix())
 

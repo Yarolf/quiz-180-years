@@ -4,9 +4,7 @@ from config import USER_ANSWER_PREFIX
 from .error_handlers.error_handler import ErrorHandler
 from .message_handlers.base_commands_handler import BaseCommandHandler
 from .message_handlers.quiz_handler import QuizSender, QuizAnswerProcessor
-from .message_handlers.registration_handler import process_register_command, request_fio
-from .message_handlers.registration_handler import process_cancel_command, handle_commands_during_registration
-from .message_handlers.registration_handler import register, Registration
+from .message_handlers.registration_handler import UserRegistrar, Registration
 from telegram.bot import dispatcher as dp
 
 
@@ -30,13 +28,14 @@ class HandlerRegistrar:
 
     @classmethod
     def register_user_registration_handlers(cls):
-        dp.register_message_handler(process_register_command, commands=['register'])
-        dp.register_message_handler(request_fio, commands=['update_info'])
-        dp.register_message_handler(process_cancel_command, state=Registration.fio, commands=['cancel'])
-        dp.register_message_handler(handle_commands_during_registration,
+        user_registrar = UserRegistrar()
+        dp.register_message_handler(user_registrar.process_register_command, commands=['register'])
+        dp.register_message_handler(user_registrar.request_fio, commands=['update_info'])
+        dp.register_message_handler(user_registrar.process_cancel_command, state=Registration.fio, commands=['cancel'])
+        dp.register_message_handler(user_registrar.handle_commands_during_registration,
                                     cls.__is_command_except_cancel,
                                     state=Registration.fio)
-        dp.register_message_handler(register, state=Registration.fio)
+        dp.register_message_handler(user_registrar.register, state=Registration.fio)
 
     @staticmethod
     def __is_command_except_cancel(message: types.Message):

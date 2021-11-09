@@ -6,7 +6,7 @@ from aiogram.utils.executor import start_webhook, start_polling
 from database.models import User, UserAnswer, QuestionBlock, PossibleAnswer
 from database.connection import database_connection as db
 
-from telegram.handlers.registrator import HandlerRegistrar
+from telegram.handlers.registrar import HandlerRegistrar
 
 
 async def on_startup(dispatcher):

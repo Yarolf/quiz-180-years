@@ -1,5 +1,3 @@
-from aiogram.dispatcher import filters
-
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State

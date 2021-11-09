@@ -53,11 +53,13 @@ async def request_fio(message: types.Message):
 @dp.message_handler(state=Registration.fio, commands=['cancel'])
 async def cancel(message: types.Message, state: FSMContext):
     await state.finish()
+    logging.info(f'{message.from_user.first_name} {message.from_user.last_name} отменил регистрацию')
     await message.answer('Регистрация отменена!')
 
 
-@dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=['.*']), state=Registration.fio)
+@dp.message_handler(lambda mes: not mes.text == '/cancel' and mes.text.startswith('/'), state=Registration.fio)
 async def handle_commands_during_registration(message: types.Message):
+    logging.info(f'{message.from_user.first_name} {message.from_user.last_name} вместо фио ввёл команду {message.text}')
     await message.answer('Необходимо ввести фамилию имя и отчество, для отмены введите  /cancel')
 
 

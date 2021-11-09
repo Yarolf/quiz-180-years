@@ -57,7 +57,7 @@ async def cancel(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=['.*']), state=Registration.fio)
-async def register(message: types.Message):
+async def handle_commands_during_registration(message: types.Message):
     await message.answer('Необходимо ввести фамилию имя и отчество, для отмены введите  /cancel')
 
 

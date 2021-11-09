@@ -10,7 +10,7 @@ from .message_handlers.registration_handler import process_register_command, req
 from telegram.bot import dispatcher as dp
 
 
-def register_handlers():
+def register_all_handlers():
     register_error_handlers()
     register_base_commands_handlers()
     register_user_registration_handlers()

@@ -6,7 +6,7 @@ from aiogram.utils.executor import start_webhook, start_polling
 from database.models import User, UserAnswer, QuestionBlock, PossibleAnswer
 from database.connection import database_connection as db
 
-from telegram.handlers.registrator import register_handlers
+from telegram.handlers.registrator import register_all_handlers
 
 
 async def on_startup(dispatcher):
@@ -19,7 +19,7 @@ async def on_shutdown(dispatcher):
 
 def prepare():
     logging.basicConfig(level=logging.INFO)
-    register_handlers()
+    register_all_handlers()
     with db:
         db.create_tables([User, UserAnswer, QuestionBlock, PossibleAnswer])
 

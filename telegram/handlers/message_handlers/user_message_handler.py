@@ -1,3 +1,5 @@
+from aiogram.dispatcher import filters
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import StatesGroup, State
@@ -48,8 +50,20 @@ async def request_first_second_name(message: types.Message):
     await Registration.first_last_name.set()
 
 
+@dp.message_handler(state=Registration.first_last_name, commands=['cancel'])
+async def cancel(message: types.Message, state: FSMContext):
+    await state.finish()
+    await message.answer('Регистрация отменена!')
+
+
+@dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=['.*']), state=Registration.first_last_name)
+async def register(message: types.Message):
+    await message.answer('Необходимо ввести фамилию имя и отчество, для отмены введите  /cancel')
+
+
 @dp.message_handler(state=Registration.first_last_name)
 async def register(message: types.Message, state: FSMContext):
+    print(message.content_type)
     logging.info(f'Получил фио от {message.from_user.first_name} {message.from_user.last_name}')
     User.register_or_update(message.from_user.id,
                             message.from_user.first_name,

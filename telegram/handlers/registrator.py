@@ -4,9 +4,9 @@ from config import USER_ANSWER_PREFIX
 from .error_handlers.error_handler import handle_error
 from .message_handlers.base_commands_handler import process_start_command, process_help_command, process_about_command
 from .message_handlers.quiz_handler import process_test_command, process_answer_call
-from .message_handlers.registration_handler import process_register_command, request_fio, process_cancel_command, \
-    handle_commands_during_registration, register, Registration
-
+from .message_handlers.registration_handler import process_register_command, request_fio
+from .message_handlers.registration_handler import process_cancel_command, handle_commands_during_registration
+from .message_handlers.registration_handler import register, Registration
 from telegram.bot import dispatcher as dp
 
 

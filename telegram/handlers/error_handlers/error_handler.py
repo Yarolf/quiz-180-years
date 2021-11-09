@@ -1,10 +1,8 @@
 import logging
 from aiogram import types
-from telegram.bot import dispatcher as dp
 import traceback
 
 
-@dp.errors_handler()
 async def handle_error(update: types.Update, exception: str):
     error_handler = ErrorHandler(update)
     error_handler.log_error()

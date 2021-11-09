@@ -33,12 +33,12 @@ class HandlerRegistrar:
         dp.register_message_handler(request_fio, commands=['update_info'])
         dp.register_message_handler(process_cancel_command, state=Registration.fio, commands=['cancel'])
         dp.register_message_handler(handle_commands_during_registration,
-                                    cls.__all_commands_except_cancel,
+                                    cls.__is_command_except_cancel,
                                     state=Registration.fio)
         dp.register_message_handler(register, state=Registration.fio)
 
     @staticmethod
-    def __all_commands_except_cancel(message: types.Message):
+    def __is_command_except_cancel(message: types.Message):
         return message.text.startswith('/') and not message.text == '/cancel'
 
     @staticmethod

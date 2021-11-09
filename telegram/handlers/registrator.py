@@ -1,8 +1,8 @@
 from aiogram import types
 
 from config import USER_ANSWER_PREFIX
-from .error_handlers.error_handler import handle_error
-from .message_handlers.base_commands_handler import process_start_command, process_help_command, process_about_command
+from .error_handlers.error_handler import ErrorHandler
+from .message_handlers.base_commands_handler import BaseCommandHandler
 from .message_handlers.quiz_handler import QuizSender, QuizAnswerProcessor
 from .message_handlers.registration_handler import process_register_command, request_fio
 from .message_handlers.registration_handler import process_cancel_command, handle_commands_during_registration
@@ -19,13 +19,14 @@ class HandlerRegistrar:
 
     @staticmethod
     def register_error_handlers():
-        dp.register_errors_handler(handle_error)
+        dp.register_errors_handler(ErrorHandler.handle_error)
 
     @staticmethod
     def register_base_commands_handlers():
-        dp.register_message_handler(process_start_command, commands=['start'])
-        dp.register_message_handler(process_help_command, commands=['help'])
-        dp.register_message_handler(process_about_command, commands=['about'])
+        base_commands_handler = BaseCommandHandler()
+        dp.register_message_handler(base_commands_handler.process_start_command, commands=['start'])
+        dp.register_message_handler(base_commands_handler.process_help_command, commands=['help'])
+        dp.register_message_handler(base_commands_handler.process_about_command, commands=['about'])
 
     @classmethod
     def register_user_registration_handlers(cls):

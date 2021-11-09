@@ -33,7 +33,7 @@ async def process_help_command(message: types.Message):
     Список доступных команд:
     /about - информация о боте
     /register - зарегистрироваться
-    /update_info - обновить данных профиля
+    /update_info - обновить данные профиля
     /test - пройти тест""")
 
 

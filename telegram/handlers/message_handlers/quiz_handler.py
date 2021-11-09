@@ -45,7 +45,7 @@ class QuizAnswerProcessor:
     @staticmethod
     async def __process_answer_call(callback: CallbackQuery):
         if not User.get_or_none(callback.from_user.id):
-            await UserRegistrar.process_register_command(callback.message)
+            await registration_handler.UserRegistrar.process_register_command(callback.message)
             return
         call_back_data = callback.data.lstrip(USER_ANSWER_PREFIX.get_full_prefix())
 

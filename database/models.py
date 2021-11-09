@@ -21,27 +21,30 @@ class User(BaseModel):
     telegram_id = BigIntegerField(primary_key=True)
     first_name = TextField()
     second_name = TextField(null=True)
+    provided_fio = TextField(null=True)
     nick_name = TextField(null=True)
-    phone_number = TextField()
+    phone_number = TextField(null=True)
 
     @classmethod
-    def register_or_update(cls, telegram_id, first_name, second_name, nick_name, phone_number=None):
+    def register_or_update(cls, telegram_id, first_name, second_name, nick_name, provided_fio, phone_number=None):
         try:
             User.register(telegram_id=telegram_id,
                           first_name=first_name,
                           second_name=second_name,
                           nick_name=nick_name,
-                          phone_number=phone_number)
+                          phone_number=phone_number,
+                          provided_fio=provided_fio)
         except cls.UserAlreadyExistsError:
             User.update(first_name=first_name,
                         second_name=second_name,
                         nick_name=nick_name,
-                        phone_number=phone_number). \
+                        phone_number=phone_number,
+                        provided_fio=provided_fio). \
                 where(User.telegram_id == telegram_id). \
                 execute()
 
     @classmethod
-    def register(cls, telegram_id, first_name, second_name, nick_name, phone_number):
+    def register(cls, telegram_id, first_name, second_name, nick_name, phone_number, provided_fio):
         if cls.get_or_none(telegram_id):
             raise cls.UserAlreadyExistsError('Пользователь уже существует!')
 
@@ -49,7 +52,8 @@ class User(BaseModel):
                    first_name=first_name,
                    second_name=second_name,
                    nick_name=nick_name,
-                   phone_number=phone_number)
+                   phone_number=phone_number,
+                   provided_fio=provided_fio)
 
     class UserAlreadyExistsError(Exception):
         pass

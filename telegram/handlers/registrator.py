@@ -3,7 +3,7 @@ from aiogram import types
 from config import USER_ANSWER_PREFIX
 from .error_handlers.error_handler import handle_error
 from .message_handlers.base_commands_handler import process_start_command, process_help_command, process_about_command
-from .message_handlers.quiz_handler import process_test_command, process_answer_call
+from .message_handlers.quiz_handler import QuizSender, QuizAnswerProcessor
 from .message_handlers.registration_handler import process_register_command, request_fio
 from .message_handlers.registration_handler import process_cancel_command, handle_commands_during_registration
 from .message_handlers.registration_handler import register, Registration
@@ -43,6 +43,8 @@ class HandlerRegistrar:
 
     @staticmethod
     def register_test_handlers():
-        dp.register_message_handler(process_test_command, commands=['test'])
-        dp.register_callback_query_handler(process_answer_call,
+        quiz_sender = QuizSender()
+        quiz_answer_processor = QuizAnswerProcessor()
+        dp.register_message_handler(quiz_sender.send_or_register, commands=['test'])
+        dp.register_callback_query_handler(quiz_answer_processor.process_answer_call,
                                            lambda call: call.data.startswith(USER_ANSWER_PREFIX.prefix))

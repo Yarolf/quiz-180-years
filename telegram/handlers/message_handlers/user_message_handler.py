@@ -63,7 +63,6 @@ async def register(message: types.Message):
 
 @dp.message_handler(state=Registration.first_last_name)
 async def register(message: types.Message, state: FSMContext):
-    print(message.content_type)
     logging.info(f'Получил фио от {message.from_user.first_name} {message.from_user.last_name}')
     User.register_or_update(message.from_user.id,
                             message.from_user.first_name,

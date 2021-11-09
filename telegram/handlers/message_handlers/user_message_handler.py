@@ -13,7 +13,7 @@ from telegram.keyboard import InlineKeyboard
 
 
 class Registration(StatesGroup):
-    first_last_name = State()
+    fio = State()
 
 
 @dp.message_handler(commands=['start'])
@@ -40,28 +40,28 @@ async def process_help_command(message: types.Message):
 @dp.message_handler(commands=['register'])
 async def process_register_command(message: types.Message):
     await message.answer('Добрый день! Перед началом викторины приглашаем пройти регистрацию.')
-    await request_first_second_name(message)
+    await request_fio(message)
 
 
 @dp.message_handler(commands=['update_info'])
-async def request_first_second_name(message: types.Message):
+async def request_fio(message: types.Message):
     logging.info(f'Запросил фио {message.from_user.first_name} {message.from_user.last_name}')
     await message.answer('Пожалуйста, отправьте свои фамилию имя и отчество одним сообщением:')
-    await Registration.first_last_name.set()
+    await Registration.fio.set()
 
 
-@dp.message_handler(state=Registration.first_last_name, commands=['cancel'])
+@dp.message_handler(state=Registration.fio, commands=['cancel'])
 async def cancel(message: types.Message, state: FSMContext):
     await state.finish()
     await message.answer('Регистрация отменена!')
 
 
-@dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=['.*']), state=Registration.first_last_name)
+@dp.message_handler(filters.RegexpCommandsFilter(regexp_commands=['.*']), state=Registration.fio)
 async def register(message: types.Message):
     await message.answer('Необходимо ввести фамилию имя и отчество, для отмены введите  /cancel')
 
 
-@dp.message_handler(state=Registration.first_last_name)
+@dp.message_handler(state=Registration.fio)
 async def register(message: types.Message, state: FSMContext):
     logging.info(f'Получил фио от {message.from_user.first_name} {message.from_user.last_name}')
     User.register_or_update(message.from_user.id,

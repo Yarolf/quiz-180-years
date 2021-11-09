@@ -34,7 +34,7 @@ async def process_help_command(message: types.Message):
     /about - информация о боте
     /register - зарегистрироваться
     /update_info - обновить данные профиля
-    /test - пройти тест""")
+    /test - пройти викторину""")
 
 
 @dp.message_handler(commands=['register'])

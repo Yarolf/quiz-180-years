@@ -1,4 +1,6 @@
 from aiogram import types
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import CallbackQuery
 
 from telegram.bot import dispatcher as dp
@@ -6,6 +8,10 @@ import logging
 from database.models import User, QuestionBlock, UserAnswer, PossibleAnswer
 from config import USER_ANSWER_PREFIX
 from telegram.keyboard import InlineKeyboard
+
+
+class Registration(StatesGroup):
+    first_last_name = State()
 
 
 @dp.message_handler(commands=['start'])
@@ -32,35 +38,35 @@ async def process_help_command(message: types.Message):
 @dp.message_handler(commands=['register'])
 async def process_register_command(message: types.Message):
     await message.answer('Добрый день! Перед началом викторины приглашаем пройти регистрацию.')
-    await request_contact(message)
+    await request_first_second_name(message)
 
 
 @dp.message_handler(commands=['update_info'])
-async def request_contact(message: types.Message):
-    keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(types.KeyboardButton(text='Предоставить телефон', request_contact=True))
-    logging.info(f'Запросил контакт у {message.from_user.first_name} {message.from_user.last_name}')
-    await message.answer('Для того, чтобы мы смогли связаться с вами в случае победы, '
-                         'предоставьте, пожалуйста, свои контактные данные, '
-                         'нажав на кнопку ниже.', reply_markup=keyboard)
+async def request_first_second_name(message: types.Message):
+    logging.info(f'Запросил фио {message.from_user.first_name} {message.from_user.last_name}')
+    await message.answer('Пожалуйста, отправьте свои фамилию имя и отчество одним сообщением:')
+    await Registration.first_last_name.set()
 
 
-@dp.message_handler(content_types=['contact'])
-async def register(message: types.Message):
-    logging.info(f'Получил контакт от {message.from_user.first_name} {message.from_user.last_name}')
+@dp.message_handler(state=Registration.first_last_name)
+async def register(message: types.Message, state: FSMContext):
+    logging.info(f'Получил фио от {message.from_user.first_name} {message.from_user.last_name}')
     User.register_or_update(message.from_user.id,
                             message.from_user.first_name,
                             message.from_user.last_name,
                             message.from_user.username,
-                            message.contact.phone_number)
-    logging.info(f'Зарегистрировал {message.from_user.first_name} {message.from_user.last_name}')
+                            message.text
+                            )
+    await state.finish()
+    logging.info(f'Зарегистрировал {message.from_user.first_name} {message.from_user.last_name} как {message.text}')
     await message.answer('Регистрация прошла успешно!', reply_markup=types.ReplyKeyboardRemove())
-    await message.answer('Для прохождения теста введите команду  /test')
+    await message.answer('Запускаю викторину:')
+    await process_test_command(message)
 
 
 @dp.message_handler(commands=['test'])
 async def process_test_command(message: types.Message):
-    logging.info(f'{message.from_user.first_name} {message.from_user.last_name} ввёл команду test')
+    logging.info(f'{message.from_user.first_name} {message.from_user.last_name} запросил викторину')
     if not User.get_or_none(message.from_user.id):
         await process_register_command(message)
         return
@@ -71,7 +77,9 @@ async def process_test_command(message: types.Message):
 async def send_next_question(message, answered_question):
     try:
         await __send_next_question(message, answered_question)
+        logging.info(f'отправил викторину {message.from_user.first_name} {message.from_user.last_name}')
     except QuestionBlock.OutOfQuestionsError:
+        logging.info(f'{message.from_user.first_name} {message.from_user.last_name} уже проходил викторину')
         await message.answer('Пройти тест можно только один раз!')
 
 
@@ -88,6 +96,7 @@ async def process_answer_call(callback: CallbackQuery):
         await __process_answer_call(callback)
     except QuestionBlock.OutOfQuestionsError:
         await __finish_quiz_for_user(callback.message)
+        logging.info(f'Завершил викторину для {callback.from_user.first_name} {callback.from_user.last_name}')
     finally:
         await callback.answer()
 
@@ -99,6 +108,8 @@ async def __process_answer_call(callback: CallbackQuery):
     call_back_data = callback.data.lstrip(USER_ANSWER_PREFIX.get_full_prefix())
 
     answer = UserAnswer.parse(callback.from_user.id, call_back_data)
+    logging.info(f'{callback.from_user.first_name} {callback.from_user.last_name} '
+                 f'ответил на {answer.question.tour_number} вопрос')
     last_saved_question_number = UserAnswer.get_last_answered_question_number_or_zero(callback.from_user.id)
 
     current_question_number = last_saved_question_number

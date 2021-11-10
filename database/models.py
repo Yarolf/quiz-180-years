@@ -2,6 +2,7 @@ import logging
 
 import peewee
 from aiogram.types import Message, InlineKeyboardMarkup
+from aiogram.utils.exceptions import MessageNotModified
 from peewee import Model, TextField, BigIntegerField, ForeignKeyField, DateTimeField
 
 from config import USER_ANSWER_PREFIX
@@ -95,6 +96,9 @@ class QuestionBlock(BaseModel):
         except (AttachmentNotSupportedError, GetMediaFileError) as e:
             logging.error(e)
             await message.answer('Что-то пошло не так, мы уже работаем над ошибкой ...')
+        except MessageNotModified:
+            logging.error(f'Сообщение не изменено! {message.from_user.first_name} {message.from_user.last_name}')
+            pass
 
     async def __edit_sent(self, message: Message,
                           reply_markup: InlineKeyboardMarkup):

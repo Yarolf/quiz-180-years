@@ -5,6 +5,7 @@ from .error_handlers.error_handler import ErrorHandler
 from .message_handlers.base_commands_handler import BaseCommandHandler
 from .message_handlers.quiz_handler import QuizSender, QuizAnswerProcessor
 from .message_handlers.registration_handler import UserRegistrar, Registration
+from .message_handlers.admin_handler import AdminHandler
 from telegram.bot import dispatcher as dp
 
 
@@ -14,6 +15,7 @@ class HandlerRegistrar:
         self.register_base_commands_handlers()
         self.register_user_registration_handlers()
         self.register_test_handlers()
+        self.register_admin_commands()
 
     @staticmethod
     def register_error_handlers():
@@ -48,3 +50,8 @@ class HandlerRegistrar:
         dp.register_message_handler(quiz_sender.send_or_register, commands=['test'])
         dp.register_callback_query_handler(quiz_answer_processor.process_answer_call,
                                            lambda call: call.data.startswith(USER_ANSWER_PREFIX.prefix))
+
+    @staticmethod
+    def register_admin_commands():
+        admin_handler = AdminHandler()
+        dp.register_message_handler(admin_handler.delete_my_answers, commands=['delete_my_answers'])

@@ -26,6 +26,16 @@ class User(BaseModel):
     nick_name = TextField(null=True)
     phone_number = TextField(null=True)
 
+    def __str__(self):
+        return f"""Информация по пользователю:
+        {self.telegram_id=}
+        {self.first_name=}
+        {self.second_name=}
+        {self.provided_fio=}
+        {self.nick_name=}
+        {self.phone_number=}
+        """
+
     @classmethod
     def register_or_update(cls, telegram_id, first_name, second_name, nick_name, provided_fio, phone_number=None):
         try:

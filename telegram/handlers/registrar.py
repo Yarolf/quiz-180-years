@@ -55,3 +55,4 @@ class HandlerRegistrar:
     def register_admin_commands():
         admin_handler = AdminHandler()
         dp.register_message_handler(admin_handler.delete_my_answers, commands=['delete_my_answers'])
+        dp.register_message_handler(admin_handler.get_winners, commands=['get_winners'])

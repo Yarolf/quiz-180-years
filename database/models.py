@@ -97,7 +97,7 @@ class QuestionBlock(BaseModel):
             logging.error(e)
             await message.answer('Что-то пошло не так, мы уже работаем над ошибкой ...')
         except MessageNotModified:
-            logging.error(f'Сообщение не изменено! {message.from_user.first_name} {message.from_user.last_name}')
+            logging.error(f'Сообщение не изменено!')
             pass
 
     async def __edit_sent(self, message: Message,

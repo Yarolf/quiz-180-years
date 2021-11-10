@@ -1,15 +1,6 @@
 import logging
 from aiogram import types
-from telegram.bot import dispatcher as dp
 import traceback
-
-
-@dp.errors_handler()
-async def handle_error(update: types.Update, exception: str):
-    error_handler = ErrorHandler(update)
-    error_handler.log_error()
-    await error_handler.notify_user()
-    return True
 
 
 class ErrorHandler:
@@ -27,6 +18,13 @@ class ErrorHandler:
             await self.update.message.answer(self.message_answer)
         except AttributeError:
             await self.update.callback_query.message.answer(self.message_answer)
+
+    @classmethod
+    async def handle_error(cls, update: types.Update, exception: str):
+        error_handler = cls(update)
+        error_handler.log_error()
+        await error_handler.notify_user()
+        return True
 
 
 
